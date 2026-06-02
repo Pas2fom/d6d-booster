@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Matrice biais critiques</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+/* BASE MOBILE-FIRST */
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --c1:#3C3489;--c1l:#EEEDFE;
+  --c2:#085041;--c2l:#E1F5EE;--c2m:#5DCAA5;
+  --c3:#633806;--c3l:#FAEEDA;--c3m:#EF9F27;
+  --c4:#712B13;--c4l:#FAECE7;--c4m:#F0997B;
+  --c5:#0C447C;--c5l:#E6F1FB;--c5m:#85B7EB;
+  --dark:#1A2744;
+  --border:#e0e0e0;--muted:#888;--text:#1a1a1a;--bg:#f6f6f4;
+  --nav-h:56px;--tab-h:64px;
+}
+html,body{min-height:100%;background:var(--bg);font-family:system-ui,-apple-system,sans-serif;color:var(--text);}
+
+/* NAV TOP */
+.top-nav{position:fixed;top:0;left:0;right:0;z-index:50;height:var(--nav-h);background:var(--dark);display:flex;align-items:center;gap:10px;padding:0 16px;}
+.top-nav-back{background:none;border:none;color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;padding:4px;}
+.top-nav-title{font-size:14px;font-weight:500;color:#fff;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.top-nav-pdf{background:rgba(255,255,255,.15);border:none;color:#fff;font-size:12px;padding:6px 12px;border-radius:16px;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:4px;}
+
+/* SCROLL BODY */
+.page-body{margin-top:var(--nav-h);padding:16px;padding-bottom:calc(var(--tab-h)+16px);max-width:600px;margin-left:auto;margin-right:auto;}
+.page-body.no-tab{padding-bottom:24px;}
+
+/* STEP NAV */
+.step-nav{display:flex;align-items:center;gap:0;margin-bottom:20px;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.step-dot{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--border);background:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#888;flex-shrink:0;}
+.step-dot.active{background:var(--accent,#3C3489);color:#fff;border-color:var(--accent,#3C3489);}
+.step-dot.done{background:#E1F5EE;color:#085041;border-color:#5DCAA5;}
+.step-line{flex:1;height:1px;background:var(--border);min-width:12px;}
+
+/* CARDS */
+.card{background:#fff;border-radius:14px;padding:16px;margin-bottom:12px;border:0.5px solid var(--border);}
+.card-title{font-size:14px;font-weight:600;margin-bottom:4px;}
+.card-sub{font-size:12px;color:var(--muted);margin-bottom:12px;}
+
+/* SECTION LABEL */
+.slabel{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;margin-top:16px;display:block;}
+
+/* FIELD */
+.field{margin-bottom:14px;}
+.field label{font-size:13px;color:#555;margin-bottom:6px;display:block;line-height:1.4;}
+.field input,.field textarea,.field select{
+  width:100%;font-size:16px;padding:11px 14px;
+  border:1px solid var(--border);border-radius:10px;
+  background:#fff;color:var(--text);
+  -webkit-appearance:none;appearance:none;
+}
+.field textarea{resize:vertical;min-height:72px;line-height:1.5;}
+.field input:focus,.field textarea:focus{outline:none;border-color:var(--accent,#3C3489);}
+
+/* PILLS (radio) */
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:4px;}
+.pill{padding:8px 14px;border-radius:20px;border:1px solid var(--border);font-size:13px;cursor:pointer;background:#fff;color:var(--text);transition:background .12s;-webkit-tap-highlight-color:transparent;}
+.pill.sel{background:var(--accent-l,#EEEDFE);color:var(--accent,#3C3489);border-color:var(--accent,#3C3489);}
+
+/* BUTTONS */
+.btn-row{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;}
+.btn{font-size:14px;padding:12px 20px;border-radius:10px;border:1px solid var(--border);background:#fff;color:var(--text);cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;}
+.btn.pri{background:var(--accent,#3C3489);color:#fff;border-color:var(--accent,#3C3489);flex:1;}
+.btn.sec{background:#fff;flex-shrink:0;}
+.btn.pdf{background:var(--accent-l,#EEEDFE);color:var(--accent,#3C3489);border-color:var(--accent,#3C3489);flex:1;}
+.btn:active{transform:scale(.97);}
+.btn:disabled{opacity:.4;cursor:not-allowed;}
+.btn-full{width:100%;}
+
+/* GRID 2 col */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.grid4{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+@media(min-width:480px){.grid4{grid-template-columns:repeat(4,1fr);}}
+
+/* RESULT TABLE → stacked on mobile */
+.result-table{width:100%;border-collapse:collapse;}
+.result-table th{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:8px 12px;text-align:left;border-bottom:1px solid var(--border);background:#f6f6f4;}
+.result-table td{padding:10px 12px;border-bottom:0.5px solid var(--border);font-size:13px;vertical-align:top;}
+.result-table tr:last-child td{border-bottom:none;}
+
+/* COUNTER */
+.counter{font-size:12px;color:var(--muted);margin-bottom:10px;}
+.counter span{font-weight:600;color:var(--accent,#3C3489);}
+
+/* HEADER RESULT */
+.result-header{background:var(--accent-l,#EEEDFE);border-radius:12px;padding:16px;margin-bottom:16px;}
+.result-header .rh-label{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;}
+.result-header .rh-name{font-size:18px;font-weight:600;color:var(--accent,#3C3489);}
+.result-header .rh-sub{font-size:12px;color:var(--muted);margin-top:2px;}
+
+/* PROGRESS BAR */
+.pbar-wrap{margin-bottom:10px;}
+.pbar-row{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:3px;}
+.pbar-track{height:6px;background:#f0f0f0;border-radius:3px;overflow:hidden;}
+.pbar-fill{height:100%;border-radius:3px;transition:width .4s;}
+
+/* PANEL */
+.panel{display:none;}
+.panel.active{display:block;}
+
+/* MISC */
+.alert-box{border-radius:10px;padding:12px 14px;font-size:13px;display:flex;align-items:flex-start;gap:8px;margin-top:6px;}
+.alert-box i{font-size:16px;flex-shrink:0;margin-top:1px;}
+.chip-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:14px;font-size:11px;font-weight:500;background:#f0f0f0;color:#555;}
+
+:root{--accent:#085041;--accent-l:#E1F5EE;}
+</style>
+</head>
+<body>
+<nav class="top-nav">
+  <a href="index.html" class="top-nav-back" aria-label="Accueil"><i class="ti ti-arrow-left"></i></a>
+  <span class="top-nav-title">2 · Biais critiques</span>
+</nav>
+<div class="page-body">
+
+<div class="step-nav" id="snav"></div>
+<div id="p1" style="display:block;">
+  <span class="slabel">Étape 1 · Identifier mes 2 biais critiques</span>
+  <p style="font-size:13px;color:#555;margin-bottom:12px;line-height:1.5;">Sélectionne exactement 2 biais que tu reconnais le plus dans ta pratique.</p>
+  <div class="counter">Sélectionnés : <span id="cnt">0</span> / 2</div>
+  <div id="bgrid"></div>
+  <div class="btn-row"><button type="button" class="btn pri" onclick="go_pre(2)">Analyser →</button></div>
+</div>
+<div id="p2" style="display:none;">
+  <span class="slabel">Étape 2 · Analyser chaque biais</span>
+  <div style="display:flex;gap:8px;margin-bottom:14px;" id="btabs"></div>
+  <div id="bforms"></div>
+  <div class="btn-row">
+    <button type="button" class="btn sec" onclick="go(1)">← Retour</button>
+    <button type="button" class="btn pri" onclick="go_pre(3)">Générer →</button>
+  </div>
+</div>
+<div id="p3" style="display:none;">
+  <div id="mat"></div>
+  <div class="btn-row" style="margin-top:16px;">
+    <button type="button" class="btn sec" onclick="go(1)">← Recommencer</button>
+    <button type="button" class="btn pdf" onclick="doPrint(document.getElementById('mat').innerHTML)"><i class="ti ti-download"></i> PDF</button>
+  </div>
+</div>
+</div>
+<script>
+const PRINT_CSS = `*{box-sizing:border-box;margin:0;padding:0;}body{font-family:system-ui,sans-serif;padding:1.5rem;color:#1a1a1a;}.card{background:#fff;border-radius:10px;padding:14px;margin-bottom:10px;border:0.5px solid #e0e0e0;}.slabel{font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:#888;margin-bottom:6px;display:block;margin-top:8px;}`;
+function doPrint(content) {
+  if(!content && document.getElementById('mat')){buildMat();content=document.getElementById('mat').innerHTML;}
+  if(!content){alert('Génère le livrable d\'abord.');return;}
+  const w = window.open('','_blank');
+  w.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><style>' + PRINT_CSS + '</style></head><body>' + content + '<scr' + 'ipt>window.onload=()=>window.print();</scr' + 'ipt></body></html>');
+  w.document.close();
+}
+
+function go(n){
+  ['p1', 'p2', 'p3'].forEach(function(id,i){
+    var el=document.getElementById(id);
+    if(el)el.style.display=(i+1===n)?'block':'none';
+  });
+  snav(n);window.scrollTo(0,0);
+}
+
+const BIAIS=[
+  {id:'confirmation',name:'Confirmation',desc:'Je cherche les infos qui confirment ma décision déjà prise.'},
+  {id:'ancrage',name:'Ancrage',desc:'Le premier chiffre entendu influence trop mon jugement final.'},
+  {id:'disponibilite',name:'Disponibilité',desc:'Je surestime la probabilité d\'événements récents.'},
+  {id:'conformite',name:'Conformité',desc:'Je m\'aligne sur le groupe même quand mon analyse diverge.'},
+  {id:'overconfidence',name:'Excès de confiance',desc:'Je sous-estime les risques et surestime mon contrôle.'},
+  {id:'statu-quo',name:'Statu quo',desc:'Je préfère ne rien changer pour éviter la perte potentielle.'},
+  {id:'sunk-cost',name:'Coût irrécupérable',desc:'Je continue à cause de mes investissements passés.'},
+  {id:'halo',name:'Halo',desc:'Une impression positive globale biaise mon évaluation des détails.'},
+  {id:'recence',name:'Récence',desc:'Je surpondère les événements récents.'},
+  {id:'autorite',name:'Autorité',desc:'Je défère trop facilement à un expert ou hiérarchique.'},
+];
+const SIGNAUX=['Je me sens pressé de conclure','J\'évite de remettre en question','Je cherche validation externe','Je minimise les risques','Je procrastine'];
+const CONTRES=['Lister les arguments contraires','Consulter quelqu\'un en désaccord','Fixer une deadline interne','Appliquer le pré-mortem','Prendre 24h de recul'];
+var sel=[],fdata={},aTab=0;
+
+function renderGrid(){
+  var g=document.getElementById('bgrid');g.innerHTML='';
+  BIAIS.forEach(function(b){
+    var isSel=sel.indexOf(b.id)>=0,locked=sel.length>=2&&!isSel;
+    var d=document.createElement('div');
+    d.style.cssText='background:'+(isSel?'#E1F5EE':'#fff')+';border:1.5px solid '+(isSel?'#085041':'#e0e0e0')+';border-radius:12px;padding:12px;margin-bottom:10px;opacity:'+(locked?'.4':'1')+';cursor:'+(locked?'not-allowed':'pointer')+';';
+    d.innerHTML='<div style="font-size:13px;font-weight:600;color:'+(isSel?'#085041':'#1a1a1a')+';margin-bottom:3px;">'+b.name+'</div><div style="font-size:12px;color:#888;line-height:1.4;">'+b.desc+'</div>';
+    if(!locked)d.onclick=function(){if(isSel)sel=sel.filter(function(x){return x!==b.id;});else if(sel.length<2)sel.push(b.id);document.getElementById('cnt').textContent=sel.length;renderGrid();};
+    g.appendChild(d);
+  });
+}
+renderGrid();
+
+function rg2(cid,opts,bid,key){
+  var w=document.getElementById(cid);if(!w)return;w.innerHTML='';
+  opts.forEach(function(o){
+    var b=document.createElement('button');b.type='button';
+    b.className='pill'+((fdata[bid]&&fdata[bid][key]===o)?' sel':'');
+    b.textContent=o;
+    b.onclick=function(){if(!fdata[bid])fdata[bid]={};fdata[bid][key]=o;rg2(cid,opts,bid,key);};
+    w.appendChild(b);
+  });
+}
+
+function saveTxts(){
+  sel.forEach(function(id){
+    if(!fdata[id])fdata[id]={};
+    var c=document.getElementById('ctx-'+id),n=document.getElementById('note-'+id);
+    if(c)fdata[id].ctx=c.value;if(n)fdata[id].note=n.value;
+  });
+}
+
+function renderForms(){
+  var tabs=document.getElementById('btabs'),forms=document.getElementById('bforms');
+  tabs.innerHTML='';forms.innerHTML='';
+  sel.forEach(function(id,idx){
+    var b=BIAIS.find(function(x){return x.id===id;});
+    if(!fdata[id])fdata[id]={};
+    var tab=document.createElement('button');tab.type='button';
+    tab.className='btn'+(aTab===idx?' pri':' sec');tab.style.flex='1';tab.style.fontSize='12px';tab.style.padding='8px';
+    tab.textContent='Biais '+(idx+1);
+    tab.onclick=function(){saveTxts();aTab=idx;renderForms();};
+    tabs.appendChild(tab);
+    var form=document.createElement('div');
+    form.style.display=aTab===idx?'block':'none';
+    form.innerHTML='<div class="card"><div style="font-size:14px;font-weight:600;color:#085041;margin-bottom:4px;">'+b.name+'</div><div style="font-size:12px;color:#888;margin-bottom:12px;">'+b.desc+'</div>'
+      +'<div class="field"><label>Contexte déclencheur</label><textarea id="ctx-'+id+'" placeholder="Quand ce biais s\'active le plus…">'+(fdata[id].ctx||'')+'</textarea></div>'
+      +'<div class="field"><label>Signal d\'alerte</label><div class="pills" id="sig-'+id+'"></div></div>'
+      +'<div class="field"><label>Contre-mesure</label><div class="pills" id="ctr-'+id+'"></div></div>'
+      +'<div class="field"><label>Note personnelle</label><textarea id="note-'+id+'" placeholder="Toute nuance utile…">'+(fdata[id].note||'')+'</textarea></div></div>';
+    forms.appendChild(form);
+    rg2('sig-'+id,SIGNAUX,id,'signal');rg2('ctr-'+id,CONTRES,id,'contre');
+  });
+}
+
+function buildMat(){
+  saveTxts();
+  var html='<div style="font-size:15px;font-weight:600;margin-bottom:12px;">Mes 2 biais critiques</div>';
+  sel.forEach(function(id,idx){
+    var b=BIAIS.find(function(x){return x.id===id;}),d=fdata[id]||{};
+    html+='<div class="card" style="border-left:3px solid #085041;">'
+      +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">'
+      +'<div style="width:22px;height:22px;border-radius:50%;background:#5DCAA5;color:#085041;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;">'+(idx+1)+'</div>'
+      +'<div style="font-size:14px;font-weight:600;color:#085041;">'+b.name+'</div></div>'
+      +'<div class="slabel" style="margin-top:0;">Contexte</div><div style="font-size:13px;margin-bottom:8px;">'+(d.ctx||'—')+'</div>'
+      +'<div class="slabel">Signal</div><div style="margin-bottom:8px;"><span style="background:#FAEEDA;color:#633806;padding:3px 10px;border-radius:10px;font-size:12px;">'+(d.signal||'—')+'</span></div>'
+      +'<div class="slabel">Contre-mesure</div><div style="font-size:13px;margin-bottom:8px;">'+(d.contre||'—')+'</div>'
+      +'<div class="slabel">Note</div><div style="font-size:13px;color:#555;">'+(d.note||'—')+'</div></div>';
+  });
+  document.getElementById('mat').innerHTML=html;
+}
+
+function snav(c){
+  var n=document.getElementById('snav');n.innerHTML='';
+  ['Biais','Analyse','Matrice'].forEach(function(l,i){
+    if(i>0){var d=document.createElement('div');d.className='step-line';n.appendChild(d);}
+    var d=document.createElement('div');d.className='step-dot'+(i+1===c?' active':i+1<c?' done':'');d.textContent=i+1;n.appendChild(d);
+  });
+}
+
+function go_pre(n){
+  if(n===2){if(sel.length<2){alert('Sélectionne 2 biais.');return;}renderForms();}
+  if(n===3)buildMat();
+  go(n);
+}
+snav(1);
+
+</script>
+</body>
+</html>

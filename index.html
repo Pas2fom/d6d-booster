@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prise de décision — Formation</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{--dark:#1A2744;--border:#e0e0e0;--muted:#888;--text:#1a1a1a;--bg:#f6f6f4;--nav-h:56px;--tab-h:64px;}
+html,body{min-height:100%;background:var(--bg);font-family:system-ui,-apple-system,sans-serif;color:var(--text);}
+
+/* NAV */
+.top-nav{position:fixed;top:0;left:0;right:0;z-index:50;height:var(--nav-h);background:var(--dark);display:flex;align-items:center;gap:12px;padding:0 16px;}
+.nav-title{font-size:15px;font-weight:500;color:#fff;flex:1;}
+.nav-prog{font-size:12px;color:rgba(255,255,255,.6);}
+
+/* BODY */
+.page{margin-top:var(--nav-h);padding:16px;padding-bottom:calc(var(--tab-h)+20px);max-width:600px;margin-left:auto;margin-right:auto;}
+
+/* HERO */
+.hero{background:#fff;border-radius:14px;padding:20px;margin-bottom:16px;border:0.5px solid var(--border);}
+.hero-title{font-size:20px;font-weight:600;margin-bottom:6px;}
+.hero-desc{font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:16px;}
+.start-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;background:var(--dark);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:500;cursor:pointer;font-family:inherit;}
+
+/* CARDS GRID */
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.lcard{background:#fff;border-radius:12px;padding:14px;border:0.5px solid var(--border);cursor:pointer;-webkit-tap-highlight-color:transparent;text-decoration:none;display:block;}
+.lcard:active{transform:scale(.97);}
+.lcard-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.lcard-num{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;}
+.lcard-phase{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:8px;}
+.lcard-title{font-size:13px;font-weight:600;margin-bottom:3px;}
+.lcard-sub{font-size:11px;color:var(--muted);}
+.lcard-arrow{font-size:16px;color:var(--muted);margin-top:8px;}
+
+/* SECTION */
+.section-title{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:20px 0 10px;}
+.section-title:first-child{margin-top:0;}
+
+/* TAB BAR */
+.tab-bar{position:fixed;bottom:0;left:0;right:0;z-index:50;height:var(--tab-h);background:#fff;border-top:0.5px solid var(--border);display:flex;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.tab-bar::-webkit-scrollbar{display:none;}
+.tab-btn{flex:0 0 auto;min-width:62px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:6px 8px;background:none;border:none;border-top:2px solid transparent;cursor:pointer;font-family:inherit;color:var(--muted);font-size:10px;-webkit-tap-highlight-color:transparent;text-decoration:none;}
+.tab-btn i{font-size:20px;}
+.tab-btn.active{color:var(--ac,#1A2744);border-top-color:var(--ac,#1A2744);}
+</style>
+</head>
+<body>
+
+<nav class="top-nav">
+  <i class="ti ti-brain" style="font-size:20px;color:#fff;"></i>
+  <span class="nav-title">Prise de décision</span>
+  <span class="nav-prog" id="prog-txt">0 / 6</span>
+</nav>
+
+<main class="page">
+  <div class="hero">
+    <div class="hero-title">Vos livrables de formation</div>
+    <div class="hero-desc">Commencez par le quiz de diagnostic, puis complétez chaque livrable au fil de la formation.</div>
+    <button class="start-btn" onclick="location.href='quiz.html'"><i class="ti ti-player-play"></i> Démarrer le quiz</button>
+  </div>
+
+  <div class="section-title">Brise-glace</div>
+  <a class="lcard" href="quiz.html" style="border-left:3px solid #1A2744;">
+    <div class="lcard-top">
+      <div class="lcard-num" style="background:#E8EBF0;color:#1A2744;"><i class="ti ti-brain" style="font-size:14px;"></i></div>
+      <span class="lcard-phase" style="background:#E8EBF0;color:#1A2744;">Brise-glace</span>
+    </div>
+    <div class="lcard-title">Quiz auto-diagnostic</div>
+    <div class="lcard-sub">4 étapes · 12 questions · PDF</div>
+    <div class="lcard-arrow"><i class="ti ti-arrow-right"></i></div>
+  </a>
+  <a class="lcard" href="regulation.html" style="border-left:3px solid #6C63D4;">
+    <div class="lcard-top">
+      <div class="lcard-num" style="background:#EEEDFE;color:#3C3489;"><i class="ti ti-heartbeat" style="font-size:14px;"></i></div>
+      <span class="lcard-phase" style="background:#EEEDFE;color:#3C3489;">Outil</span>
+    </div>
+    <div class="lcard-title">Régulation émotionnelle</div>
+    <div class="lcard-sub">4 étapes · 12 min · Monitoring situationnel</div>
+    <div class="lcard-arrow"><i class="ti ti-arrow-right"></i></div>
+  </a>
+
+  <div class="section-title">Empathie & Définition</div>
+  <div class="grid">
+    <a class="lcard" href="l1.html" style="border-left:3px solid #3C3489;">
+      <div class="lcard-top"><div class="lcard-num" style="background:#EEEDFE;color:#3C3489;">1</div><span class="lcard-phase" style="background:#EEEDFE;color:#3C3489;">Empathie</span></div>
+      <div class="lcard-title">Carte de profil</div>
+      <div class="lcard-sub">Style · Cocktail · Angle mort</div>
+      <div class="lcard-arrow"><i class="ti ti-arrow-right"></i></div>
+    </a>
+    <a class="lcard" href="l2.html" style="border-left:3px solid #085041;">
+      <div class="lcard-top"><div class="lcard-num" style="background:#E1F5EE;color:#085041;">2</div><span class="lcard-phase" style="background:#E1F5EE;color:#085041;">Définition</span></div>
+      <div class="lcard-title">Matrice biais</div>
+      <div class="lcard-sub">2 biais · Signal · Contre-mesure</div>
+      <div class="lcard-arrow"><i class="ti ti-arrow-right"></i></div>
+    </a>
+    <a class="lcard" href="l3.html" style="border-left:3px solid #085041;grid-column:span 2;">
+      <div class="lcard-top"><div class="lcard-num" style="background:#E1F5EE;color:#085041;">3</div><span class="lcard-phase" style="background:#E1F5EE;color:#085041;">Définition</span></div>
+      <div class="lcard-title">Échelle de valeurs</div>
+      <div class="lcard-sub">5 valeurs · Émotion · Marqueur somatique</div>
+      <div class="lcard-arrow"><i class="ti ti-arrow-right"></i></div>
+    </a>
+  </div>
+
+  <div class="section-title">Idéation & Prototypage</div>
+  <div class="grid">
+    <a class="lcard" href="l4.html" style="border-left:3px solid #854F0B;">
+      <div class="lcard-top"><div class="lcard-num" style="background:#FAEEDA;color:#854F0B;">4</div><span class="lcard-phase" style="background:#FAEEDA;color:#854F0B;">Idéation</span></div>
+      <div class="lcard-title">Matrice OECA</div>
+      <div class="lcard-sub">Options · Critères · Risques</div>
+      <div class="lcard-arrow"><i class="ti ti-arrow-right"></i></div>
+    </a>
+    <a class="lcard" href="l5.html" style="border-left:3px solid #712B13;">
+      <div class="lcard-top"><div class="lcard-num" style="background:#FAECE7;color:#712B13;">5</div><span class="lcard-phase" style="background:#FAECE7;color:#712B13;">Prototype</span></div>
+      <div class="lcard-title">Process accéléré</div>
+      <div class="lcard-sub">Techniques · Étapes · Arrêt</div>
+      <div class="lcard-arrow"><i class="ti ti-arrow-right"></i></div>
+    </a>
+  </div>
+
+  <div class="section-title">Transfert</div>
+  <a class="lcard" href="l6.html" style="border-left:3px solid #0C447C;">
+    <div class="lcard-top"><div class="lcard-num" style="background:#E6F1FB;color:#0C447C;">6</div><span class="lcard-phase" style="background:#E6F1FB;color:#0C447C;">Transfert</span></div>
+    <div class="lcard-title">Plan de transfert J+30/J+60</div>
+    <div class="lcard-sub">3 engagements · Revue · Pair de soutien</div>
+    <div class="lcard-arrow"><i class="ti ti-arrow-right"></i></div>
+  </a>
+</main>
+
+<nav class="tab-bar">
+  <a class="tab-btn active" href="index.html" style="--ac:#1A2744;"><i class="ti ti-home"></i>Accueil</a>
+  <a class="tab-btn" href="quiz.html" style="--ac:#1A2744;"><i class="ti ti-brain"></i>Quiz</a>
+  <a class="tab-btn" href="regulation.html" style="--ac:#6C63D4;"><i class="ti ti-heartbeat"></i>Régulation</a>
+  <a class="tab-btn" href="l1.html" style="--ac:#3C3489;"><i class="ti ti-id-badge"></i>Profil</a>
+  <a class="tab-btn" href="l2.html" style="--ac:#085041;"><i class="ti ti-table"></i>Biais</a>
+  <a class="tab-btn" href="l3.html" style="--ac:#633806;"><i class="ti ti-heart"></i>Valeurs</a>
+  <a class="tab-btn" href="l4.html" style="--ac:#854F0B;"><i class="ti ti-list-check"></i>OECA</a>
+  <a class="tab-btn" href="l5.html" style="--ac:#712B13;"><i class="ti ti-rocket"></i>Process</a>
+  <a class="tab-btn" href="l6.html" style="--ac:#0C447C;"><i class="ti ti-calendar-stats"></i>J+30/60</a>
+</nav>
+</body>
+</html>

@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz auto-diagnostic</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+/* BASE MOBILE-FIRST */
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --c1:#3C3489;--c1l:#EEEDFE;
+  --c2:#085041;--c2l:#E1F5EE;--c2m:#5DCAA5;
+  --c3:#633806;--c3l:#FAEEDA;--c3m:#EF9F27;
+  --c4:#712B13;--c4l:#FAECE7;--c4m:#F0997B;
+  --c5:#0C447C;--c5l:#E6F1FB;--c5m:#85B7EB;
+  --dark:#1A2744;
+  --border:#e0e0e0;--muted:#888;--text:#1a1a1a;--bg:#f6f6f4;
+  --nav-h:56px;--tab-h:64px;
+}
+html,body{min-height:100%;background:var(--bg);font-family:system-ui,-apple-system,sans-serif;color:var(--text);}
+
+/* NAV TOP */
+.top-nav{position:fixed;top:0;left:0;right:0;z-index:50;height:var(--nav-h);background:var(--dark);display:flex;align-items:center;gap:10px;padding:0 16px;}
+.top-nav-back{background:none;border:none;color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;padding:4px;}
+.top-nav-title{font-size:14px;font-weight:500;color:#fff;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.top-nav-pdf{background:rgba(255,255,255,.15);border:none;color:#fff;font-size:12px;padding:6px 12px;border-radius:16px;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:4px;}
+
+/* SCROLL BODY */
+.page-body{margin-top:var(--nav-h);padding:16px;padding-bottom:calc(var(--tab-h)+16px);max-width:600px;margin-left:auto;margin-right:auto;}
+.page-body.no-tab{padding-bottom:24px;}
+
+/* STEP NAV */
+.step-nav{display:flex;align-items:center;gap:0;margin-bottom:20px;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.step-dot{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--border);background:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#888;flex-shrink:0;}
+.step-dot.active{background:var(--accent,#3C3489);color:#fff;border-color:var(--accent,#3C3489);}
+.step-dot.done{background:#E1F5EE;color:#085041;border-color:#5DCAA5;}
+.step-line{flex:1;height:1px;background:var(--border);min-width:12px;}
+
+/* CARDS */
+.card{background:#fff;border-radius:14px;padding:16px;margin-bottom:12px;border:0.5px solid var(--border);}
+.card-title{font-size:14px;font-weight:600;margin-bottom:4px;}
+.card-sub{font-size:12px;color:var(--muted);margin-bottom:12px;}
+
+/* SECTION LABEL */
+.slabel{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;margin-top:16px;display:block;}
+
+/* FIELD */
+.field{margin-bottom:14px;}
+.field label{font-size:13px;color:#555;margin-bottom:6px;display:block;line-height:1.4;}
+.field input,.field textarea,.field select{
+  width:100%;font-size:16px;padding:11px 14px;
+  border:1px solid var(--border);border-radius:10px;
+  background:#fff;color:var(--text);
+  -webkit-appearance:none;appearance:none;
+}
+.field textarea{resize:vertical;min-height:72px;line-height:1.5;}
+.field input:focus,.field textarea:focus{outline:none;border-color:var(--accent,#3C3489);}
+
+/* PILLS (radio) */
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:4px;}
+.pill{padding:8px 14px;border-radius:20px;border:1px solid var(--border);font-size:13px;cursor:pointer;background:#fff;color:var(--text);transition:background .12s;-webkit-tap-highlight-color:transparent;}
+.pill.sel{background:var(--accent-l,#EEEDFE);color:var(--accent,#3C3489);border-color:var(--accent,#3C3489);}
+
+/* BUTTONS */
+.btn-row{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;}
+.btn{font-size:14px;padding:12px 20px;border-radius:10px;border:1px solid var(--border);background:#fff;color:var(--text);cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;}
+.btn.pri{background:var(--accent,#3C3489);color:#fff;border-color:var(--accent,#3C3489);flex:1;}
+.btn.sec{background:#fff;flex-shrink:0;}
+.btn.pdf{background:var(--accent-l,#EEEDFE);color:var(--accent,#3C3489);border-color:var(--accent,#3C3489);flex:1;}
+.btn:active{transform:scale(.97);}
+.btn:disabled{opacity:.4;cursor:not-allowed;}
+.btn-full{width:100%;}
+
+/* GRID 2 col */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.grid4{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+@media(min-width:480px){.grid4{grid-template-columns:repeat(4,1fr);}}
+
+/* RESULT TABLE → stacked on mobile */
+.result-table{width:100%;border-collapse:collapse;}
+.result-table th{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:8px 12px;text-align:left;border-bottom:1px solid var(--border);background:#f6f6f4;}
+.result-table td{padding:10px 12px;border-bottom:0.5px solid var(--border);font-size:13px;vertical-align:top;}
+.result-table tr:last-child td{border-bottom:none;}
+
+/* COUNTER */
+.counter{font-size:12px;color:var(--muted);margin-bottom:10px;}
+.counter span{font-weight:600;color:var(--accent,#3C3489);}
+
+/* HEADER RESULT */
+.result-header{background:var(--accent-l,#EEEDFE);border-radius:12px;padding:16px;margin-bottom:16px;}
+.result-header .rh-label{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;}
+.result-header .rh-name{font-size:18px;font-weight:600;color:var(--accent,#3C3489);}
+.result-header .rh-sub{font-size:12px;color:var(--muted);margin-top:2px;}
+
+/* PROGRESS BAR */
+.pbar-wrap{margin-bottom:10px;}
+.pbar-row{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:3px;}
+.pbar-track{height:6px;background:#f0f0f0;border-radius:3px;overflow:hidden;}
+.pbar-fill{height:100%;border-radius:3px;transition:width .4s;}
+
+/* PANEL */
+.panel{display:none;}
+.panel.active{display:block;}
+
+/* MISC */
+.alert-box{border-radius:10px;padding:12px 14px;font-size:13px;display:flex;align-items:flex-start;gap:8px;margin-top:6px;}
+.alert-box i{font-size:16px;flex-shrink:0;margin-top:1px;}
+.chip-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:14px;font-size:11px;font-weight:500;background:#f0f0f0;color:#555;}
+
+:root{--accent:#1A2744;--accent-l:#E8EBF0;}
+
+</style>
+</head>
+<body>
+<nav class="top-nav">
+  <a href="index.html" class="top-nav-back" aria-label="Accueil"><i class="ti ti-arrow-left"></i></a>
+  <span class="top-nav-title">Quiz · Auto-diagnostic</span>
+  
+</nav>
+<div class="page-body">
+
+<!-- INTRO -->
+<div id="p-intro" style="display:block;">
+  <div style="background:#1A2744;border-radius:16px;overflow:hidden;margin-bottom:16px;">
+    <div style="padding:20px 16px;display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      <div style="background:#9B6A1A;border-radius:10px;padding:14px;color:#fff;font-size:13px;font-weight:500;line-height:1.4;"><div style="font-size:10px;opacity:.7;margin-bottom:4px;">1</div>Élaboration des options</div>
+      <div style="background:#7A5A2A;border-radius:10px;padding:14px;color:#fff;font-size:13px;font-weight:500;line-height:1.4;"><div style="font-size:10px;opacity:.7;margin-bottom:4px;">2</div>Évaluation rationnelle et affective</div>
+      <div style="background:#8A7355;border-radius:10px;padding:14px;color:#fff;font-size:13px;font-weight:500;line-height:1.4;"><div style="font-size:10px;opacity:.7;margin-bottom:4px;">3</div>Le choix</div>
+      <div style="background:#A89880;border-radius:10px;padding:14px;color:#fff;font-size:13px;font-weight:500;line-height:1.4;"><div style="font-size:10px;opacity:.7;margin-bottom:4px;">4</div>L'expérience du résultat</div>
+    </div>
+  </div>
+  <div class="card">
+    <div style="font-size:16px;font-weight:600;margin-bottom:8px;">Où en êtes-vous avec chaque étape ?</div>
+    <div style="font-size:13px;color:#555;line-height:1.6;margin-bottom:14px;">12 questions · ~5 min · Résultats confidentiels + PDF téléchargeable</div>
+    <div class="chip-row">
+      <span class="chip">⏱ 5 minutes</span>
+      <span class="chip">📋 12 questions</span>
+      <span class="chip">🔒 Confidentiel</span>
+    </div>
+    <div class="field"><label>Prénom (pour votre diagnostic)</label><input type="text" id="q-nom" placeholder="Ex. Marie"></div>
+    <button type="button" class="btn pri btn-full" onclick="startQuiz()">Démarrer →</button>
+  </div>
+</div>
+
+<!-- QUIZ PANELS (4 étapes) -->
+<div id="p-q1" style="display:none;"></div>
+<div id="p-q2" style="display:none;"></div>
+<div id="p-q3" style="display:none;"></div>
+<div id="p-q4" style="display:none;"></div>
+
+<!-- RÉSULTATS -->
+<div id="p-result" style="display:none;"></div>
+
+</div>
+<script>
+
+const ETAPES=[
+  {id:'e1',num:1,label:'Élaboration des options',color:'#9B6A1A',light:'#F5E6C8',
+   qs:[
+    {t:`Face à une décision importante, combien d'options envisagez-vous généralement ?`,
+     os:[{t:`Je pars sur l'option évidente`,s:1},{t:`J'envisage pour/contre`,s:2},{t:`Je génère 3 à 5 options`,s:4},{t:`Je génère plusieurs options ET je cherche des points de vue divergents`,s:5}]},
+    {t:`Comment traitez-vous les informations disponibles ?`,
+     os:[{t:`Je prends surtout celles qui confirment mon idée`,s:1},{t:`Je prends ce qui est disponible sans méthode`,s:2},{t:`Je cherche activement des infos contradictoires`,s:4},{t:`Je distingue faits et interprétations et identifie mes lacunes`,s:5}]},
+    {t:`Face à une décision dans l'incertitude ?`,
+     os:[{t:`J'attends d'avoir toutes les infos`,s:2},{t:`Je décide vite pour éviter l'inconfort`,s:1},{t:`J'identifie les infos vraiment nécessaires et j'accepte l'incertitude résiduelle`,s:5},{t:`Je génère des scénarios alternatifs`,s:4}]},
+   ],
+   vigilances:[
+    {niv:'faible',t:`Vous avez tendance à vous limiter à 1–2 options évidentes.`,tip:`En formation : l'outil OECA vous aidera à structurer la génération d'options.`},
+    {niv:'moyen',t:`Vous générez des options mais sans démarche systématique.`,tip:`En formation : vous découvrirez comment éviter les angles morts.`},
+    {niv:'fort',t:`Bonne capacité à explorer — attention au biais de disponibilité.`,tip:`En formation : intégrez davantage de points de vue divergents.`},
+   ]},
+  {id:'e2',num:2,label:'Évaluation rationnelle et affective',color:'#7A5A2A',light:'#EDD9B0',
+   qs:[
+    {t:`Comment intégrez-vous vos émotions dans vos décisions professionnelles ?`,
+     os:[{t:`Je les ignore — les décisions doivent être rationnelles`,s:1},{t:`Je les ressens mais ne sais pas les utiliser`,s:2},{t:`Je les reconnais comme des signaux d'information`,s:4},{t:`J'analyse mes émotions anticipées pour enrichir mon évaluation`,s:5}]},
+    {t:`Comment pondérez-vous vos critères de choix ?`,
+     os:[{t:`Je n'ai pas vraiment de critères explicites`,s:1},{t:`J'ai des critères en tête non formalisés`,s:2},{t:`Je définis mes critères et leur importance avant d'évaluer`,s:4},{t:`Je distingue critères éliminatoires et de préférence, et je les pondère`,s:5}]},
+    {t:`Comment gérez-vous le conflit raison/émotion ?`,
+     os:[{t:`Je suis toujours la raison`,s:2},{t:`Je suis souvent l'émotion puis je justifie`,s:1},{t:`Je prends le temps d'explorer les deux`,s:4},{t:`Je traite ce désaccord comme un signal à analyser`,s:5}]},
+   ],
+   vigilances:[
+    {niv:'faible',t:`Vous sur-rationalisez ou décidez trop émotionnellement.`,tip:`En formation : vous découvrirez comment équilibrer raison, émotion et intuition.`},
+    {niv:'moyen',t:`Vous avez conscience des deux registres mais sans méthode stable.`,tip:`En formation : l'outil OECA vous donnera un cadre pour structurer l'évaluation.`},
+    {niv:'fort',t:`Bonne intégration — vérifiez que vos critères sont vraiment explicites.`,tip:`En formation : testez vos critères sur un cas réel.`},
+   ]},
+  {id:'e3',num:3,label:'Le choix',color:'#8A7355',light:'#E8D9C0',
+   qs:[
+    {t:`Une fois vos options évaluées, comment passez-vous au choix ?`,
+     os:[{t:`J'ai du mal à trancher — je reporte souvent`,s:1},{t:`Je choisis mais avec le sentiment d'avoir pu faire autrement`,s:2},{t:`Je choisis en m'appuyant sur mes critères malgré l'incertitude`,s:4},{t:`J'ai une méthode claire et je l'assume pleinement`,s:5}]},
+    {t:`Sous pression (temps limité, enjeux forts) ?`,
+     os:[{t:`Je me précipite et regrette souvent`,s:1},{t:`La qualité se dégrade significativement`,s:2},{t:`Je m'appuie sur des heuristiques fiables`,s:4},{t:`J'ai des techniques spécifiques pour décider vite sans sacrifier la qualité`,s:5}]},
+    {t:`Comment gérez-vous le biais du statu quo ?`,
+     os:[{t:`Je ne suis pas vraiment conscient de ce biais`,s:1},{t:`Je le reconnais mais j'ai du mal à m'en affranchir`,s:2},{t:`Je teste activement mes options contre "ne rien faire"`,s:4},{t:`J'applique des techniques spécifiques (pré-mortem, avocat du diable…)`,s:5}]},
+   ],
+   vigilances:[
+    {niv:'faible',t:`Le moment du choix est votre zone de vulnérabilité principale.`,tip:`En formation : vous travaillerez les techniques accélérées et les clés du lâcher-prise.`},
+    {niv:'moyen',t:`Vous choisissez mais avec une efficacité variable selon les contextes.`,tip:`En formation : les simulations sous pression vous permettront d'affiner votre process.`},
+    {niv:'fort',t:`Bonne maîtrise du moment du choix — restez vigilant face aux biais de conformité.`,tip:`En formation : enrichissez votre boîte à outils de débiaisage.`},
+   ]},
+  {id:'e4',num:4,label:`L'expérience du résultat`,color:'#A89880',light:'#F0E8D8',
+   qs:[
+    {t:`Après une décision importante, comment analysez-vous les résultats ?`,
+     os:[{t:`Je passe à la suite sans vraiment analyser`,s:1},{t:`Je note si c'était bien ou pas, sans démarche structurée`,s:2},{t:`J'identifie ce qui a fonctionné et ce que j'aurais pu faire autrement`,s:4},{t:`J'analyse le résultat ET mon processus décisionnel`,s:5}]},
+    {t:`Face à un résultat décevant ?`,
+     os:[{t:`Je me remets en question excessivement ou cherche des responsables externes`,s:1},{t:`J'accepte le résultat sans vraiment tirer de leçons`,s:2},{t:`Je distingue ce qui relevait de ma décision et ce qui relevait du contexte`,s:4},{t:`Je transforme les mauvais résultats en apprentissages actionnables`,s:5}]},
+    {t:`Vos décisions passées enrichissent-elles vos décisions futures ?`,
+     os:[{t:`Peu — je repars presque de zéro à chaque fois`,s:1},{t:`Intuitivement, sans capitalisation formelle`,s:2},{t:`J'ai des règles de décision issues de mon expérience`,s:4},{t:`J'ai un processus d'apprentissage décisionnel qui affine mon intuition`,s:5}]},
+   ],
+   vigilances:[
+    {niv:'faible',t:`Vous capitalisez peu sur l'expérience — chaque décision repart presque de zéro.`,tip:`En formation : vous verrez comment l'expérience du résultat alimente l'intuition décisionnelle.`},
+    {niv:'moyen',t:`Vous tirez des leçons informellement — il manque un processus.`,tip:`En formation : le plan de transfert J+30/J+60 vous aidera à structurer cet apprentissage.`},
+    {niv:'fort',t:`Bonne boucle d'apprentissage — distinguez bien chance et qualité de la décision.`,tip:`En formation : explorez comment les marqueurs somatiques enrichissent l'expérience du résultat.`},
+   ]},
+];
+
+let answers={},answersOther={},nomParticipant='';
+
+function startQuiz(){
+  nomParticipant=document.getElementById('q-nom').value.trim()||'Participant·e';
+  ETAPES.forEach((e,i)=>renderQ(i+1));
+  showPanel('p-q1');
+}
+
+function renderQ(num){
+  const e=ETAPES[num-1];
+  const pid='p-q'+num;
+  const wrap=document.getElementById(pid);
+  let html=`<span class="slabel" style="color:${e.color};">Étape ${e.num} · ${e.label}</span>`;
+  e.qs.forEach((q,qi)=>{
+    const key=e.id+'-'+qi;
+    const letters=['A','B','C','D'];
+    html+=`<div class="card"><div style="font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:#888;margin-bottom:8px;">Question ${qi+1}</div>
+      <div style="font-size:15px;font-weight:500;margin-bottom:14px;line-height:1.5;">${q.t}</div>
+      <div style="display:flex;flex-direction:column;gap:8px;" id="opts-${key}">`;
+    q.os.forEach((o,oi)=>{
+      const isSel=answers[key]===oi;
+      html+=`<button type="button" onclick="pick('${key}',${oi},'${e.color}','${e.light}')" id="opt-${key}-${oi}"
+        style="text-align:left;padding:12px 14px;border-radius:10px;border:1.5px solid ${isSel?e.color:'#e0e0e0'};background:${isSel?e.light:'#fff'};display:flex;align-items:center;gap:10px;font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;">
+        <span style="width:24px;height:24px;border-radius:50%;border:1.5px solid ${isSel?e.color:'#ccc'};background:${isSel?e.color:'#fff'};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:${isSel?'#fff':e.color};flex-shrink:0;">${letters[oi]}</span>
+        <span style="font-size:14px;line-height:1.4;">${o.t}</span>
+      </button>`;
+    });
+    html+=`</div><div class="field" style="margin-top:10px;"><label>Autre (précisez)</label><textarea id="other-${key}" placeholder="Vous pouvez compléter ou nuancer votre réponse…" oninput="answersOther['${key}']=this.value">${answersOther[key]||''}</textarea></div></div>`;
+  });
+  const isLast=num===4;
+  html+=`<div class="btn-row">${num>1?`<button type="button" class="btn sec" onclick="showPanel('p-q${num-1}');window.scrollTo(0,0);">← Retour</button>`:''}
+    <button type="button" class="btn pri" id="btn-next-${num}" onclick="${isLast ? 'showResults()' : `showPanel(\'p-q${num+1}\');window.scrollTo(0,0);`}" ${allAnswered(e)?'':'disabled'}>${isLast?'Voir mes résultats →':'Étape suivante →'}</button>
+  </div>`;
+  wrap.innerHTML=html;
+}
+
+function pick(key,idx,color,light){
+  answers[key]=idx;
+  // re-render just this question's buttons
+  const eId=key.split('-')[0],qi=+key.split('-')[1];
+  const e=ETAPES.find(x=>x.id===eId);
+  e.qs[qi].os.forEach((_,oi)=>{
+    const btn=document.getElementById('opt-'+key+'-'+oi);
+    if(!btn)return;
+    const sel=oi===idx;
+    btn.style.borderColor=sel?color:'#e0e0e0';btn.style.background=sel?light:'#fff';
+    btn.querySelector('span').style.background=sel?color:'#fff';
+    btn.querySelector('span').style.borderColor=sel?color:'#ccc';
+    btn.querySelector('span').style.color=sel?'#fff':color;
+  });
+  // enable next btn
+  const num=ETAPES.indexOf(e)+1;
+  const nextBtn=document.getElementById('btn-next-'+num);
+  if(nextBtn&&allAnswered(e))nextBtn.disabled=false;
+}
+
+function allAnswered(e){return e.qs.every((_,qi)=>answers[e.id+'-'+qi]!==undefined);}
+
+function calcScore(e){
+  let s=0;e.qs.forEach((_,qi)=>{const idx=answers[e.id+'-'+qi];if(idx!==undefined)s+=e.qs[qi].os[idx].s;});
+  return Math.round(s/(e.qs.length*5)*100);
+}
+
+function getLvl(pct){return pct<=40?'faible':pct<=70?'moyen':'fort';}
+function getLvlLabel(pct){
+  if(pct<=40)return{l:'Zone de vigilance',bg:'#FAECE7',c:'#712B13'};
+  if(pct<=70)return{l:'En développement',bg:'#FAEEDA',c:'#633806'};
+  return{l:'Point fort',bg:'#E1F5EE',c:'#085041'};
+}
+
+function showResults(){
+  const scores=ETAPES.map(e=>({...e,pct:calcScore(e)}));
+  const avg=Math.round(scores.reduce((s,e)=>s+e.pct,0)/scores.length);
+  const sorted=[...scores].sort((a,b)=>a.pct-b.pct);
+  let html=`<div style="background:#1A2744;border-radius:14px;padding:16px;margin-bottom:16px;color:#fff;">
+    <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:4px;">Votre profil décisionnel</div>
+    <div style="font-size:18px;font-weight:600;margin-bottom:2px;">${nomParticipant}</div>
+    <div style="font-size:12px;color:rgba(255,255,255,.6);">Score global : ${avg}% · ${scores.filter(s=>s.pct>70).length} point(s) fort(s)</div>
+  </div>
+  <span class="slabel">Scores par étape</span>`;
+  scores.forEach(s=>{const lv=getLvlLabel(s.pct);
+    html+=`<div class="card"><div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="font-size:13px;font-weight:600;">${s.label}</span><span style="font-size:13px;font-weight:700;color:${s.color};">${s.pct}%</span></div>
+      <div class="pbar-track" style="margin-bottom:6px;"><div class="pbar-fill" style="width:${s.pct}%;background:${s.color};"></div></div>
+      <span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px;background:${lv.bg};color:${lv.c};">${lv.l}</span>
+    </div>`;
+  });
+  html+=`<span class="slabel">Points de vigilance</span>`;
+  sorted.forEach(s=>{const lvk=getLvl(s.pct);const v=s.vigilances.find(x=>x.niv===lvk)||s.vigilances[0];
+    html+=`<div class="card" style="border-left:3px solid ${s.color};">
+      <div style="font-size:11px;font-weight:600;text-transform:uppercase;color:${s.color};margin-bottom:6px;">Étape ${s.num} · ${s.label}</div>
+      <div style="font-size:13px;color:#1a1a1a;margin-bottom:4px;">${v.t}</div>
+      <div style="font-size:12px;color:#888;font-style:italic;">${v.tip}</div>
+    </div>`;
+  });
+  const complements=Object.keys(answersOther).filter(k=>(answersOther[k]||'').trim());
+  if(complements.length){
+    html+=`<span class="slabel">Réponses libres complémentaires</span>`;
+    complements.forEach(k=>{
+      const parts=k.split('-');
+      const et=ETAPES.find(x=>x.id===parts[0]);
+      const qi=+parts[1];
+      const label=et?`Étape ${et.num} · Question ${qi+1}`:'Question';
+      html+=`<div class="card"><div style="font-size:11px;font-weight:600;text-transform:uppercase;color:#888;margin-bottom:6px;">${label}</div><div style="font-size:13px;color:#555;line-height:1.5;">${answersOther[k]}</div></div>`;
+    });
+  }
+  html+=`<div class="card" style="background:#1A2744;border-color:#1A2744;">
+    <div style="font-size:13px;color:rgba(255,255,255,.8);line-height:1.6;">Ces résultats sont un point de départ. <strong style="color:#fff;">La formation va vous donner des outils concrets</strong> pour renforcer chaque étape.</div>
+  </div>
+  <button type="button" class="btn pdf btn-full" style="margin-top:8px;" onclick="doPrint()"><i class="ti ti-download"></i> Télécharger mon diagnostic PDF</button>
+  <button type="button" class="btn sec btn-full" style="margin-top:8px;" onclick="restart()">Recommencer</button>`;
+  document.getElementById('p-result').innerHTML=html;
+  showPanel('p-result');
+}
+
+function showPanel(id){
+  var ids=['p-intro','p-q1','p-q2','p-q3','p-q4','p-result'];
+  ids.forEach(function(pid){
+    var el=document.getElementById(pid);
+    if(el)el.style.display=(pid===id)?'block':'none';
+  });
+  window.scrollTo(0,0);
+}
+
+function restart(){answers={};answersOther={};showPanel('p-intro');}
+
+function doPrint(){
+  const c=document.getElementById('p-result').innerHTML;
+  const w=window.open('','_blank');
+  const today=new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Diagnostic · ${nomParticipant}</title><style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:system-ui,sans-serif;padding:1.5rem;color:#1a1a1a;}.card{border-radius:10px;padding:14px;margin-bottom:10px;border:0.5px solid #e0e0e0;}.slabel{font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:#888;margin-bottom:6px;display:block;margin-top:12px;}.pbar-track{height:5px;background:#f0f0f0;border-radius:3px;overflow:hidden;margin-bottom:4px;}.pbar-fill{height:100%;border-radius:3px;}</style></head><body>${c}<script>window.onload=()=>window.print();<\/script></body></html>`);
+  w.document.close();
+}
+
+</script>
+</body>
+</html>

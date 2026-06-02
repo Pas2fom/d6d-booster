@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Échelle de valeurs</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+/* BASE MOBILE-FIRST */
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --c1:#3C3489;--c1l:#EEEDFE;
+  --c2:#085041;--c2l:#E1F5EE;--c2m:#5DCAA5;
+  --c3:#633806;--c3l:#FAEEDA;--c3m:#EF9F27;
+  --c4:#712B13;--c4l:#FAECE7;--c4m:#F0997B;
+  --c5:#0C447C;--c5l:#E6F1FB;--c5m:#85B7EB;
+  --dark:#1A2744;
+  --border:#e0e0e0;--muted:#888;--text:#1a1a1a;--bg:#f6f6f4;
+  --nav-h:56px;--tab-h:64px;
+}
+html,body{min-height:100%;background:var(--bg);font-family:system-ui,-apple-system,sans-serif;color:var(--text);}
+
+/* NAV TOP */
+.top-nav{position:fixed;top:0;left:0;right:0;z-index:50;height:var(--nav-h);background:var(--dark);display:flex;align-items:center;gap:10px;padding:0 16px;}
+.top-nav-back{background:none;border:none;color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;padding:4px;}
+.top-nav-title{font-size:14px;font-weight:500;color:#fff;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.top-nav-pdf{background:rgba(255,255,255,.15);border:none;color:#fff;font-size:12px;padding:6px 12px;border-radius:16px;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:4px;}
+
+/* SCROLL BODY */
+.page-body{margin-top:var(--nav-h);padding:16px;padding-bottom:calc(var(--tab-h)+16px);max-width:600px;margin-left:auto;margin-right:auto;}
+.page-body.no-tab{padding-bottom:24px;}
+
+/* STEP NAV */
+.step-nav{display:flex;align-items:center;gap:0;margin-bottom:20px;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.step-dot{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--border);background:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#888;flex-shrink:0;}
+.step-dot.active{background:var(--accent,#3C3489);color:#fff;border-color:var(--accent,#3C3489);}
+.step-dot.done{background:#E1F5EE;color:#085041;border-color:#5DCAA5;}
+.step-line{flex:1;height:1px;background:var(--border);min-width:12px;}
+
+/* CARDS */
+.card{background:#fff;border-radius:14px;padding:16px;margin-bottom:12px;border:0.5px solid var(--border);}
+.card-title{font-size:14px;font-weight:600;margin-bottom:4px;}
+.card-sub{font-size:12px;color:var(--muted);margin-bottom:12px;}
+
+/* SECTION LABEL */
+.slabel{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;margin-top:16px;display:block;}
+
+/* FIELD */
+.field{margin-bottom:14px;}
+.field label{font-size:13px;color:#555;margin-bottom:6px;display:block;line-height:1.4;}
+.field input,.field textarea,.field select{
+  width:100%;font-size:16px;padding:11px 14px;
+  border:1px solid var(--border);border-radius:10px;
+  background:#fff;color:var(--text);
+  -webkit-appearance:none;appearance:none;
+}
+.field textarea{resize:vertical;min-height:72px;line-height:1.5;}
+.field input:focus,.field textarea:focus{outline:none;border-color:var(--accent,#3C3489);}
+
+/* PILLS (radio) */
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:4px;}
+.pill{padding:8px 14px;border-radius:20px;border:1px solid var(--border);font-size:13px;cursor:pointer;background:#fff;color:var(--text);transition:background .12s;-webkit-tap-highlight-color:transparent;}
+.pill.sel{background:var(--accent-l,#EEEDFE);color:var(--accent,#3C3489);border-color:var(--accent,#3C3489);}
+
+/* BUTTONS */
+.btn-row{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;}
+.btn{font-size:14px;padding:12px 20px;border-radius:10px;border:1px solid var(--border);background:#fff;color:var(--text);cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;}
+.btn.pri{background:var(--accent,#3C3489);color:#fff;border-color:var(--accent,#3C3489);flex:1;}
+.btn.sec{background:#fff;flex-shrink:0;}
+.btn.pdf{background:var(--accent-l,#EEEDFE);color:var(--accent,#3C3489);border-color:var(--accent,#3C3489);flex:1;}
+.btn:active{transform:scale(.97);}
+.btn:disabled{opacity:.4;cursor:not-allowed;}
+.btn-full{width:100%;}
+
+/* GRID 2 col */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.grid4{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+@media(min-width:480px){.grid4{grid-template-columns:repeat(4,1fr);}}
+
+/* RESULT TABLE → stacked on mobile */
+.result-table{width:100%;border-collapse:collapse;}
+.result-table th{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:8px 12px;text-align:left;border-bottom:1px solid var(--border);background:#f6f6f4;}
+.result-table td{padding:10px 12px;border-bottom:0.5px solid var(--border);font-size:13px;vertical-align:top;}
+.result-table tr:last-child td{border-bottom:none;}
+
+/* COUNTER */
+.counter{font-size:12px;color:var(--muted);margin-bottom:10px;}
+.counter span{font-weight:600;color:var(--accent,#3C3489);}
+
+/* HEADER RESULT */
+.result-header{background:var(--accent-l,#EEEDFE);border-radius:12px;padding:16px;margin-bottom:16px;}
+.result-header .rh-label{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;}
+.result-header .rh-name{font-size:18px;font-weight:600;color:var(--accent,#3C3489);}
+.result-header .rh-sub{font-size:12px;color:var(--muted);margin-top:2px;}
+
+/* PROGRESS BAR */
+.pbar-wrap{margin-bottom:10px;}
+.pbar-row{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:3px;}
+.pbar-track{height:6px;background:#f0f0f0;border-radius:3px;overflow:hidden;}
+.pbar-fill{height:100%;border-radius:3px;transition:width .4s;}
+
+/* PANEL */
+.panel{display:none;}
+.panel.active{display:block;}
+
+/* MISC */
+.alert-box{border-radius:10px;padding:12px 14px;font-size:13px;display:flex;align-items:flex-start;gap:8px;margin-top:6px;}
+.alert-box i{font-size:16px;flex-shrink:0;margin-top:1px;}
+.chip-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:14px;font-size:11px;font-weight:500;background:#f0f0f0;color:#555;}
+
+:root{--accent:#633806;--accent-l:#FAEEDA;}
+
+</style>
+</head>
+<body>
+<nav class="top-nav">
+  <a href="index.html" class="top-nav-back" aria-label="Accueil"><i class="ti ti-arrow-left"></i></a>
+  <span class="top-nav-title">3 · Échelle de valeurs</span>
+  <button type="button" class="top-nav-pdf" onclick="doPrint()"><i class="ti ti-download"></i> PDF</button>
+</nav>
+<div class="page-body">
+
+<div class="step-nav" id="snav"></div>
+<div id="p1" style="display:block;">
+  <span class="slabel">Étape 1 · Choisir mes 5 valeurs</span>
+  <p style="font-size:13px;color:#555;margin-bottom:12px;line-height:1.5;">Sélectionne exactement 5 valeurs qui guident réellement tes décisions (pas celles que tu "devrais" avoir).</p>
+  <div class="counter">Sélectionnées : <span id="cnt">0</span> / 5</div>
+  <div id="vgrid"></div>
+  <div class="field" style="margin-top:8px;">
+    <label>Une autre valeur importante pour vous</label>
+    <div style="display:flex;gap:8px;">
+      <input type="text" id="custom-v" placeholder="Une autre valeur importante pour vous…" style="flex:1;">
+      <button type="button" class="btn" onclick="addCustom()" style="flex-shrink:0;padding:11px 14px;">+</button>
+    </div>
+  </div>
+  <div class="btn-row"><button type="button" class="btn pri" onclick="go(2)">Classer →</button></div>
+</div>
+<div id="p2" style="display:none;">
+  <span class="slabel">Étape 2 · Classer par ordre d'importance</span>
+  <p style="font-size:13px;color:#555;margin-bottom:12px;">Utilise les flèches pour ordonner tes valeurs (1 = la plus déterminante).</p>
+  <div id="rank-list"></div>
+  <div class="btn-row"><button type="button" class="btn sec" onclick="go(1)">← Retour</button><button type="button" class="btn pri" onclick="go(3)">Approfondir →</button></div>
+</div>
+<div id="p3" style="display:none;">
+  <span class="slabel">Étape 3 · Ancrer chaque valeur</span>
+  <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;" id="vtabs"></div>
+  <div id="vforms"></div>
+  <div class="btn-row"><button type="button" class="btn sec" onclick="go(2)">← Retour</button><button type="button" class="btn pri" onclick="go(4)">Générer →</button></div>
+</div>
+<div id="p4" style="display:none;">
+  <div id="echelle-out"></div>
+  <div class="btn-row" style="margin-top:16px;">
+    <button type="button" class="btn sec" onclick="go(1)">← Recommencer</button>
+    <button type="button" class="btn pdf" onclick="doPrint()"><i class="ti ti-download"></i> PDF</button>
+  </div>
+</div>
+
+</div>
+<script>
+
+const VALEURS=[{id:'equite',n:'Équité'},{id:'autonomie',n:'Autonomie'},{id:'loyaute',n:'Loyauté'},{id:'impact',n:'Impact'},{id:'excellence',n:'Excellence'},{id:'bienveillance',n:'Bienveillance'},{id:'courage',n:'Courage'},{id:'integrite',n:'Intégrité'},{id:'innovation',n:'Innovation'},{id:'securite',n:'Sécurité'},{id:'liberte',n:'Liberté'},{id:'collectif',n:'Collectif'},{id:'efficacite',n:'Efficacité'},{id:'respect',n:'Respect'},{id:'transparence',n:'Transparence'}];
+const EMOTIONS=['Sérénité','Fierté','Inconfort','Enthousiasme','Peur','Colère','Confiance','Autre'];
+const SOMAS=['Légèreté dans la poitrine','Tension dans les épaules','Nœud à l\'estomac','Clarté mentale','Gorge serrée','Chaleur dans le visage','Autre'];
+const VIGIS=['Décider trop vite sous pression','Ignorer cette valeur quand ça arrange','Me laisser convaincre contre elle','Sur-valoriser au détriment des autres'];
+let sel=[],ranked=[],fdata={},aTab=0;
+const getName=id=>{const v=VALEURS.find(x=>x.id===id);return v?v.n:id;};
+
+function renderGrid(){
+  const g=document.getElementById('vgrid');g.innerHTML='';
+  VALEURS.forEach(v=>{
+    const isSel=sel.includes(v.id),locked=sel.length>=5&&!isSel;
+    const b=document.createElement('button');
+    b.style.cssText=`display:flex;align-items:center;width:100%;padding:11px 14px;margin-bottom:8px;border-radius:10px;border:1.5px solid ${isSel?'#EF9F27':'#e0e0e0'};background:${isSel?'#FAEEDA':'#fff'};font-size:14px;font-family:inherit;cursor:${locked?'not-allowed':'pointer'};opacity:${locked?.4:1};text-align:left;`;
+    b.innerHTML=`<span style="font-weight:${isSel?'600':'400'};color:${isSel?'#633806':'#1a1a1a'};">${v.n}</span>`;
+    if(!locked)b.onclick=()=>{if(isSel)sel=sel.filter(x=>x!==v.id);else if(sel.length<5)sel.push(v.id);document.getElementById('cnt').textContent=sel.length;renderGrid();};
+    g.appendChild(b);
+  });
+}
+renderGrid();
+
+function addCustom(){
+  const inp=document.getElementById('custom-v'),val=inp.value.trim();
+  if(!val||sel.length>=5)return;
+  const id='c_'+Date.now();VALEURS.push({id,n:val});sel.push(id);
+  document.getElementById('cnt').textContent=sel.length;inp.value='';renderGrid();
+}
+
+function renderRank(){
+  const l=document.getElementById('rank-list');l.innerHTML='';
+  ranked.forEach((id,idx)=>{
+    const d=document.createElement('div');
+    d.style.cssText='display:flex;align-items:center;gap:10px;padding:12px 14px;margin-bottom:8px;border:1px solid #e0e0e0;border-radius:10px;background:#fff;';
+    d.innerHTML=`<div style="width:24px;height:24px;border-radius:50%;background:#FAEEDA;color:#633806;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${idx+1}</div>
+      <div style="flex:1;font-size:14px;font-weight:500;">${getName(id)}</div>
+      <div style="display:flex;gap:4px;">
+        <button type="button" onclick="mv(${idx},-1)" ${idx===0?'disabled':''} style="width:32px;height:32px;border-radius:8px;border:1px solid #e0e0e0;background:#fff;font-size:16px;cursor:pointer;">↑</button>
+        <button type="button" onclick="mv(${idx},1)" ${idx===ranked.length-1?'disabled':''} style="width:32px;height:32px;border-radius:8px;border:1px solid #e0e0e0;background:#fff;font-size:16px;cursor:pointer;">↓</button>
+      </div>`;
+    l.appendChild(d);
+  });
+}
+function mv(i,d){const n=i+d;if(n<0||n>=ranked.length)return;[ranked[i],ranked[n]]=[ranked[n],ranked[i]];renderRank();}
+
+function rg(cid,opts,vid,key){
+  const w=document.getElementById(cid);if(!w)return;w.innerHTML='';
+  opts.forEach(o=>{const b=document.createElement('button');b.className='pill'+(fdata[vid]?.[key]===o?' sel':'');
+    b.textContent=o;b.onclick=()=>{if(!fdata[vid])fdata[vid]={};fdata[vid][key]=o;rg(cid,opts,vid,key);};w.appendChild(b);});
+}
+
+function saveTexts(){
+  ranked.forEach(id=>{
+    if(!fdata[id])fdata[id]={};
+    ['desc','emo-libre','soma-libre'].forEach(k=>{const el=document.getElementById(k+'-'+id);if(el)fdata[id][k.replace('-','')] = el.value;});
+  });
+}
+
+function renderForms(){
+  const tabs=document.getElementById('vtabs'),forms=document.getElementById('vforms');
+  tabs.innerHTML='';forms.innerHTML='';
+  ranked.forEach((id,idx)=>{
+    if(!fdata[id])fdata[id]={};
+    const tab=document.createElement('button');
+    tab.className='btn'+(aTab===idx?' pri':' sec');tab.style.cssText='font-size:12px;padding:7px 10px;flex:1;min-width:0;';
+    tab.textContent=(idx+1)+' · '+getName(id).slice(0,8);tab.onclick=()=>{saveTexts();aTab=idx;renderForms();};tabs.appendChild(tab);
+    const form=document.createElement('div');form.style.display=aTab===idx?'block':'none';
+    form.innerHTML=`<div class="card">
+      <div style="font-size:14px;font-weight:600;color:#633806;margin-bottom:12px;">Valeur n°${idx+1} · ${getName(id)}</div>
+      <div class="field"><label>Ce que je remarque quand cette valeur guide ma décision</label><textarea id="desc-${id}" placeholder="Ex. Je me sens aligné, je décide plus vite.">${fdata[id].desc||''}</textarea></div>
+      <div class="field"><label>Émotion associée</label><div class="pills" id="rg-emo-${id}"></div>
+        <input type="text" id="emo-libre-${id}" placeholder="Ou décris ton émotion…" style="margin-top:8px;" value="${fdata[id].emollibre||''}"></div>
+      <div class="field"><label>Marqueur somatique</label><div class="pills" id="rg-soma-${id}"></div>
+        <input type="text" id="soma-libre-${id}" placeholder="Ou décris ta sensation physique…" style="margin-top:8px;" value="${fdata[id].somallibre||''}"></div>
+      <div class="field"><label>Zone de vigilance</label><div class="pills" id="rg-vigi-${id}"></div></div>
+    </div>`;
+    forms.appendChild(form);
+    rg('rg-emo-'+id,EMOTIONS,id,'emotion');rg('rg-soma-'+id,SOMAS,id,'soma');rg('rg-vigi-'+id,VIGIS,id,'vigi');
+  });
+}
+
+function buildEchelle(){
+  saveTexts();
+  let html='<div style="font-size:15px;font-weight:600;margin-bottom:12px;">Mon échelle de valeurs</div>';
+  ranked.forEach((id,idx)=>{
+    const d=fdata[id]||{};
+    const emo=d.emollibre||(d.emolibre)||d.emotion||'—';
+    const soma=d.somallibre||(d.somalibre)||d.soma||'—';
+    html+=`<div class="card" style="border-left:3px solid #633806;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+        <div style="font-size:20px;font-weight:700;color:#633806;min-width:24px;">${idx+1}</div>
+        <div style="font-size:14px;font-weight:600;">${getName(id)}</div>
+      </div>
+      ${d.desc?`<div style="font-size:13px;color:#555;margin-bottom:8px;line-height:1.4;">${d.desc}</div>`:''}
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <span style="background:#FAEEDA;color:#633806;padding:4px 10px;border-radius:10px;font-size:12px;">😊 ${emo}</span>
+        <span style="background:#FAECE7;color:#712B13;padding:4px 10px;border-radius:10px;font-size:12px;">⚡ ${soma}</span>
+        ${d.vigi?`<span style="background:#f0f0f0;color:#555;padding:4px 10px;border-radius:10px;font-size:12px;">⚠️ ${d.vigi}</span>`:''}
+      </div>
+    </div>`;
+  });
+  document.getElementById('echelle-out').innerHTML=html;
+}
+
+function snav(c){
+  const n=document.getElementById('snav');n.innerHTML='';
+  ['Valeurs','Classement','Ancrage','Échelle'].forEach((l,i)=>{
+    if(i>0){const d=document.createElement('div');d.className='step-line';n.appendChild(d);}
+    const d=document.createElement('div');d.className='step-dot'+(i+1===c?' active':i+1<c?' done':'');d.textContent=i+1;n.appendChild(d);
+  });
+}
+
+function go(n){
+  if(n===2){
+    if(sel.length!==5){alert('Sélectionne exactement 5 valeurs.');return;}
+    ranked=sel.slice();renderRank();
+  }
+  if(n===3)renderForms();
+  if(n===4)buildEchelle();
+  ['p1','p2','p3','p4'].forEach((id,i)=>{const el=document.getElementById(id);if(el)el.style.display=(i+1===n)?'block':'none';});
+  snav(n);window.scrollTo(0,0);
+}
+snav(1);
+
+function doPrint(){
+  const c=document.getElementById('echelle-out').innerHTML;
+  if(!c){alert('Génère ton échelle d\'abord.');return;}
+  const w=window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Échelle de valeurs</title><style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:system-ui,sans-serif;padding:1.5rem;}.card{border-radius:10px;padding:14px;margin-bottom:10px;border:0.5px solid #e0e0e0;border-left:3px solid #633806;}</style></head><body>${c}<script>window.onload=()=>window.print();<\/script></body></html>`);
+  w.document.close();
+}
+
+</script>
+</body>
+</html>

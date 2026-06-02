@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plan de transfert</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+/* BASE MOBILE-FIRST */
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --c1:#3C3489;--c1l:#EEEDFE;
+  --c2:#085041;--c2l:#E1F5EE;--c2m:#5DCAA5;
+  --c3:#633806;--c3l:#FAEEDA;--c3m:#EF9F27;
+  --c4:#712B13;--c4l:#FAECE7;--c4m:#F0997B;
+  --c5:#0C447C;--c5l:#E6F1FB;--c5m:#85B7EB;
+  --dark:#1A2744;
+  --border:#e0e0e0;--muted:#888;--text:#1a1a1a;--bg:#f6f6f4;
+  --nav-h:56px;--tab-h:64px;
+}
+html,body{min-height:100%;background:var(--bg);font-family:system-ui,-apple-system,sans-serif;color:var(--text);}
+
+/* NAV TOP */
+.top-nav{position:fixed;top:0;left:0;right:0;z-index:50;height:var(--nav-h);background:var(--dark);display:flex;align-items:center;gap:10px;padding:0 16px;}
+.top-nav-back{background:none;border:none;color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;padding:4px;}
+.top-nav-title{font-size:14px;font-weight:500;color:#fff;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.top-nav-pdf{background:rgba(255,255,255,.15);border:none;color:#fff;font-size:12px;padding:6px 12px;border-radius:16px;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:4px;}
+
+/* SCROLL BODY */
+.page-body{margin-top:var(--nav-h);padding:16px;padding-bottom:calc(var(--tab-h)+16px);max-width:600px;margin-left:auto;margin-right:auto;}
+.page-body.no-tab{padding-bottom:24px;}
+
+/* STEP NAV */
+.step-nav{display:flex;align-items:center;gap:0;margin-bottom:20px;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.step-dot{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--border);background:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#888;flex-shrink:0;}
+.step-dot.active{background:var(--accent,#3C3489);color:#fff;border-color:var(--accent,#3C3489);}
+.step-dot.done{background:#E1F5EE;color:#085041;border-color:#5DCAA5;}
+.step-line{flex:1;height:1px;background:var(--border);min-width:12px;}
+
+/* CARDS */
+.card{background:#fff;border-radius:14px;padding:16px;margin-bottom:12px;border:0.5px solid var(--border);}
+.card-title{font-size:14px;font-weight:600;margin-bottom:4px;}
+.card-sub{font-size:12px;color:var(--muted);margin-bottom:12px;}
+
+/* SECTION LABEL */
+.slabel{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;margin-top:16px;display:block;}
+
+/* FIELD */
+.field{margin-bottom:14px;}
+.field label{font-size:13px;color:#555;margin-bottom:6px;display:block;line-height:1.4;}
+.field input,.field textarea,.field select{
+  width:100%;font-size:16px;padding:11px 14px;
+  border:1px solid var(--border);border-radius:10px;
+  background:#fff;color:var(--text);
+  -webkit-appearance:none;appearance:none;
+}
+.field textarea{resize:vertical;min-height:72px;line-height:1.5;}
+.field input:focus,.field textarea:focus{outline:none;border-color:var(--accent,#3C3489);}
+
+/* PILLS (radio) */
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:4px;}
+.pill{padding:8px 14px;border-radius:20px;border:1px solid var(--border);font-size:13px;cursor:pointer;background:#fff;color:var(--text);transition:background .12s;-webkit-tap-highlight-color:transparent;}
+.pill.sel{background:var(--accent-l,#EEEDFE);color:var(--accent,#3C3489);border-color:var(--accent,#3C3489);}
+
+/* BUTTONS */
+.btn-row{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;}
+.btn{font-size:14px;padding:12px 20px;border-radius:10px;border:1px solid var(--border);background:#fff;color:var(--text);cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;}
+.btn.pri{background:var(--accent,#3C3489);color:#fff;border-color:var(--accent,#3C3489);flex:1;}
+.btn.sec{background:#fff;flex-shrink:0;}
+.btn.pdf{background:var(--accent-l,#EEEDFE);color:var(--accent,#3C3489);border-color:var(--accent,#3C3489);flex:1;}
+.btn:active{transform:scale(.97);}
+.btn:disabled{opacity:.4;cursor:not-allowed;}
+.btn-full{width:100%;}
+
+/* GRID 2 col */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.grid4{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+@media(min-width:480px){.grid4{grid-template-columns:repeat(4,1fr);}}
+
+/* RESULT TABLE → stacked on mobile */
+.result-table{width:100%;border-collapse:collapse;}
+.result-table th{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:8px 12px;text-align:left;border-bottom:1px solid var(--border);background:#f6f6f4;}
+.result-table td{padding:10px 12px;border-bottom:0.5px solid var(--border);font-size:13px;vertical-align:top;}
+.result-table tr:last-child td{border-bottom:none;}
+
+/* COUNTER */
+.counter{font-size:12px;color:var(--muted);margin-bottom:10px;}
+.counter span{font-weight:600;color:var(--accent,#3C3489);}
+
+/* HEADER RESULT */
+.result-header{background:var(--accent-l,#EEEDFE);border-radius:12px;padding:16px;margin-bottom:16px;}
+.result-header .rh-label{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;}
+.result-header .rh-name{font-size:18px;font-weight:600;color:var(--accent,#3C3489);}
+.result-header .rh-sub{font-size:12px;color:var(--muted);margin-top:2px;}
+
+/* PROGRESS BAR */
+.pbar-wrap{margin-bottom:10px;}
+.pbar-row{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:3px;}
+.pbar-track{height:6px;background:#f0f0f0;border-radius:3px;overflow:hidden;}
+.pbar-fill{height:100%;border-radius:3px;transition:width .4s;}
+
+/* PANEL */
+.panel{display:none;}
+.panel.active{display:block;}
+
+/* MISC */
+.alert-box{border-radius:10px;padding:12px 14px;font-size:13px;display:flex;align-items:flex-start;gap:8px;margin-top:6px;}
+.alert-box i{font-size:16px;flex-shrink:0;margin-top:1px;}
+.chip-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:14px;font-size:11px;font-weight:500;background:#f0f0f0;color:#555;}
+
+:root{--accent:#0C447C;--accent-l:#E6F1FB;}
+
+</style>
+</head>
+<body>
+<nav class="top-nav">
+  <a href="index.html" class="top-nav-back" aria-label="Accueil"><i class="ti ti-arrow-left"></i></a>
+  <span class="top-nav-title">6 · Plan de transfert</span>
+  <button type="button" class="top-nav-pdf" onclick="doPrint()"><i class="ti ti-download"></i> PDF</button>
+</nav>
+<div class="page-body">
+
+<div class="step-nav" id="snav"></div>
+<div id="p1" style="display:block;">
+  <span class="slabel">Étape 1 · Bilan de formation</span>
+  <div class="field"><label>Prénom / Nom</label><input type="text" id="f-nom" placeholder="Ex. Marie Dupont"></div>
+  <div class="field"><label>Date de fin de formation</label><input type="date" id="f-date"></div>
+  <div class="field"><label>L'insight le plus marquant</label><textarea id="f-insight" placeholder="Ex. Je décide bien plus à l'émotion que je ne le croyais."></textarea></div>
+  <div class="field"><label>L'outil que j'utiliserai le plus souvent</label><div class="pills" id="pg-outil"></div></div>
+  <div class="field"><label>Ce que je veux changer dans ma façon de décider</label><textarea id="f-changer" placeholder="Ex. Prendre 5 minutes seul avant toute décision RH importante."></textarea></div>
+  <div class="btn-row"><button type="button" class="btn pri" onclick="go(2)">Mes engagements →</button></div>
+</div>
+<div id="p2" style="display:none;">
+  <span class="slabel">Étape 2 · Mes 3 engagements concrets</span>
+  <p style="font-size:13px;color:#555;margin-bottom:12px;line-height:1.5;">Pour chaque engagement : une décision réelle à prendre dans les 30 prochains jours.</p>
+  <div id="eng-list"></div>
+  <div class="btn-row"><button type="button" class="btn sec" onclick="go(1)">← Retour</button><button type="button" class="btn pri" onclick="go(3)">Revue →</button></div>
+</div>
+<div id="p3" style="display:none;">
+  <span class="slabel">Étape 3 · Ma revue J+30 / J+60</span>
+  <div class="field"><label>Comment je fais ma revue J+30</label><div class="pills" id="pg-r30"></div></div>
+  <div class="field"><label>Comment je fais ma revue J+60</label><div class="pills" id="pg-r60"></div></div>
+  <div class="field"><label>Mon pair de soutien</label><input type="text" id="f-pair" placeholder="Ex. Mon manager, un collègue de la formation…"></div>
+  <div class="field"><label>Si pas de progrès à J+30, je…</label><textarea id="f-planb" placeholder="Ex. Je reprends la matrice OECA sur ma décision cible."></textarea></div>
+  <div class="btn-row"><button type="button" class="btn sec" onclick="go(2)">← Retour</button><button type="button" class="btn pri" onclick="go(4)">Générer mon plan →</button></div>
+</div>
+<div id="p4" style="display:none;">
+  <div id="plan-out"></div>
+  <div class="btn-row" style="margin-top:16px;">
+    <button type="button" class="btn sec" onclick="go(1)">← Recommencer</button>
+    <button type="button" class="btn pdf" onclick="doPrint()"><i class="ti ti-download"></i> PDF</button>
+  </div>
+</div>
+
+</div>
+<script>
+
+const OUTILS=['Carte de profil','Matrice biais','Échelle de valeurs','Matrice OECA','Process accéléré','Pré-mortem','DIAD','10-10-10'];
+const OUTILS_ENG=['Carte de profil','Matrice biais','Échelle de valeurs','Matrice OECA','Process accéléré','Pré-mortem','DIAD','10-10-10','Intuition','Avocat du diable'];
+const KPIS=['Utilisé l\'outil au moins une fois','Moins de regret après la décision','Décision plus rapide','Bonnes personnes consultées','Biais identifié avant d\'agir','Cohérence avec mes valeurs'];
+const REVUE=['Seul·e avec mon plan','Avec mon manager','Avec un pair de formation','Via l\'espace participant','En groupe de co-développement'];
+let fd={outil:'',r30:'',r60:''};
+let engs=[{d:'',outil:'',outilLibre:'',kpi:'',kpiLibre:'',date:''},{d:'',outil:'',outilLibre:'',kpi:'',kpiLibre:'',date:''},{d:'',outil:'',outilLibre:'',kpi:'',kpiLibre:'',date:''}];
+
+function rg(cid,opts,key){const w=document.getElementById(cid);if(!w)return;w.innerHTML='';opts.forEach(o=>{const b=document.createElement('button');b.className='pill'+(fd[key]===o?' sel':'');b.textContent=o;b.onclick=()=>{fd[key]=o;rg(cid,opts,key);};w.appendChild(b);});}
+rg('pg-outil',OUTILS,'outil');
+
+function rgEng(cid,opts,idx,key){const w=document.getElementById(cid);if(!w)return;w.innerHTML='';opts.forEach(o=>{const b=document.createElement('button');b.className='pill'+(engs[idx][key]===o?' sel':'');b.textContent=o;b.onclick=()=>{engs[idx][key]=o;rgEng(cid,opts,idx,key);};w.appendChild(b);});}
+
+function renderEngs(){
+  const l=document.getElementById('eng-list');l.innerHTML='';
+  engs.forEach((e,i)=>{
+    const d=document.createElement('div');
+    d.className='card';
+    d.innerHTML=`<div style="font-size:13px;font-weight:600;color:#0C447C;margin-bottom:10px;">Engagement ${i+1}</div>
+      <div class="field"><label>Décision cible (dans les 30 jours)</label><textarea id="eng-d-${i}" placeholder="Ex. Choisir entre deux candidats pour le poste de chef de projet." onchange="engs[${i}].d=this.value">${e.d}</textarea></div>
+      <div class="field"><label>Outil associé</label><div class="pills" id="rg-outil-${i}"></div><input type="text" id="outil-libre-${i}" placeholder="Autre outil…" style="margin-top:8px;" value="${e.outilLibre}" onchange="engs[${i}].outilLibre=this.value"></div>
+      <div class="field"><label>Indicateur de réussite</label><div class="pills" id="rg-kpi-${i}"></div><input type="text" id="kpi-libre-${i}" placeholder="Autre indicateur…" style="margin-top:8px;" value="${e.kpiLibre}" onchange="engs[${i}].kpiLibre=this.value"></div>
+      <div class="field"><label>Date de révision</label><input type="date" id="eng-date-${i}" value="${e.date}" onchange="engs[${i}].date=this.value"></div>`;
+    l.appendChild(d);
+    rgEng('rg-outil-'+i,OUTILS_ENG,i,'outil');
+    rgEng('rg-kpi-'+i,KPIS,i,'kpi');
+  });
+}
+
+function addDays(s,n){if(!s)return'—';const d=new Date(s);d.setDate(d.getDate()+n);return d.toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});}
+function fmtDate(s){if(!s)return'—';return new Date(s).toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});}
+
+function buildPlan(){
+  const nom=document.getElementById('f-nom').value||'—';
+  const date=document.getElementById('f-date').value;
+  const insight=document.getElementById('f-insight').value||'—';
+  const changer=document.getElementById('f-changer').value||'—';
+  const pair=document.getElementById('f-pair').value||'—';
+  const planb=document.getElementById('f-planb').value||'—';
+  let ini=(nom.trim().split(' ').filter(Boolean).map(p=>p[0].toUpperCase()).slice(0,2).join(''))||'?';
+  let engsH=engs.map((e,i)=>{
+    const outil=(e.outilLibre||'').trim()||(e.outil||'');
+    const kpi=(e.kpiLibre||'').trim()||(e.kpi||'');
+    return `<div class="card" style="border-left:3px solid #0C447C;">
+      <div style="font-size:13px;font-weight:600;margin-bottom:6px;">Engagement ${i+1}</div>
+      <div style="font-size:13px;color:#1a1a1a;margin-bottom:8px;">${e.d||'—'}</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        ${outil?`<span style="background:#E6F1FB;color:#0C447C;padding:4px 10px;border-radius:10px;font-size:12px;">🔧 ${outil}</span>`:''}
+        ${kpi?`<span style="background:#EAF3DE;color:#27500A;padding:4px 10px;border-radius:10px;font-size:12px;">✓ ${kpi}</span>`:''}
+        ${e.date?`<span style="background:#FAEEDA;color:#633806;padding:4px 10px;border-radius:10px;font-size:12px;">📅 ${fmtDate(e.date)}</span>`:''}
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('plan-out').innerHTML=`
+  <div style="background:#E6F1FB;border-radius:12px;padding:14px;margin-bottom:12px;display:flex;align-items:center;gap:12px;">
+    <div style="width:40px;height:40px;border-radius:50%;background:#0C447C;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#E6F1FB;flex-shrink:0;">${ini}</div>
+    <div><div style="font-size:15px;font-weight:600;color:#0C447C;">${nom}</div><div style="font-size:12px;color:#185FA5;">Formation du ${fmtDate(date)}</div></div>
+  </div>
+  <div class="card"><div class="slabel" style="margin-top:0;">Bilan</div>
+    <div style="font-size:13px;color:#1a1a1a;margin-bottom:6px;"><strong>Insight :</strong> ${insight}</div>
+    <div style="font-size:13px;color:#1a1a1a;margin-bottom:6px;"><strong>Outil prioritaire :</strong> ${fd.outil||'—'}</div>
+    <div style="font-size:13px;color:#1a1a1a;"><strong>Je change :</strong> ${changer}</div>
+  </div>
+  <div class="card"><div class="slabel" style="margin-top:0;">Revue J+30 — ${addDays(date,30)}</div>
+    <div style="font-size:13px;color:#555;">${fd.r30||'—'}</div>
+    <div class="slabel">Revue J+60 — ${addDays(date,60)}</div>
+    <div style="font-size:13px;color:#555;">${fd.r60||'—'}</div>
+  </div>
+  ${engsH}
+  <div class="card"><div class="slabel" style="margin-top:0;">Pair de soutien · Plan B</div>
+    <div style="font-size:13px;"><strong>${pair}</strong> · ${planb}</div>
+  </div>`;
+}
+
+function snav(c){const n=document.getElementById('snav');n.innerHTML='';['Bilan','Engagements','Revue','Plan'].forEach((l,i)=>{if(i>0){const d=document.createElement('div');d.className='step-line';n.appendChild(d);}const d=document.createElement('div');d.className='step-dot'+(i+1===c?' active':i+1<c?' done':'');d.textContent=i+1;n.appendChild(d);});}
+
+function go(n){
+  if(n===4)buildPlan();
+  ['p1','p2','p3','p4'].forEach((id,i)=>{const el=document.getElementById(id);if(el)el.style.display=(i+1===n)?'block':'none';});
+  snav(n);window.scrollTo(0,0);
+}
+snav(1);
+
+function doPrint(){const c=document.getElementById('plan-out').innerHTML;if(!c){alert('Génère ton plan d\'abord.');return;}const w=window.open('','_blank');w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Plan de transfert</title><style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:system-ui,sans-serif;padding:1.5rem;}.card{border-radius:10px;padding:14px;margin-bottom:10px;border:0.5px solid #e0e0e0;}.slabel{font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:#888;margin-bottom:4px;display:block;margin-top:10px;}.slabel:first-child{margin-top:0;}</style></head><body>${c}<script>window.onload=()=>window.print();<\/script></body></html>`);w.document.close();}
+
+</script>
+</body>
+</html>

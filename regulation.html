@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Régulation émotionnelle – Prise de décision</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, 'Segoe UI', sans-serif;
+  background: #F0EEE8;
+  min-height: 100vh;
+  padding: 0 0 80px 0;
+}
+
+/* ── TOP BAR ── */
+.topbar {
+  background: #1A1816;
+  color: #F7F5F0;
+  padding: 14px 16px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.topbar-title { font-size: 14px; font-weight: 600; letter-spacing: 0.01em; }
+.topbar-sub { font-size: 10px; color: #9B9890; letter-spacing: 0.06em; margin-top: 2px; }
+.back-btn {
+  background: none; border: none; color: #9B9890;
+  font-size: 20px; cursor: pointer; padding: 2px 8px 2px 0;
+}
+
+/* ── PROGRESS ── */
+.progress-bar {
+  display: flex;
+  gap: 5px;
+  padding: 12px 16px 8px;
+}
+.progress-seg {
+  height: 4px;
+  border-radius: 2px;
+  background: #D3D1C7;
+  flex: 1;
+  transition: background 0.3s ease;
+}
+.progress-seg.active { background: #1A1816; }
+
+/* ── CARDS ── */
+.card {
+  background: #FAFAF8;
+  border-radius: 14px;
+  margin: 8px 12px;
+  padding: 20px 16px;
+  border: 0.5px solid #E0DDD7;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+  display: none;
+}
+.card.active { display: block; }
+
+/* ── STEP HEADER ── */
+.step-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.step-num {
+  width: 30px; height: 30px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+.step-label { font-size: 10px; color: #8B8880; letter-spacing: 0.06em; margin-bottom: 2px; }
+.step-title { font-size: 20px; font-weight: 700; color: #1A1816; line-height: 1.1; }
+
+/* ── TIMER ── */
+.timer-wrap { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
+.timer-display {
+  font-size: 11px; font-variant-numeric: tabular-nums;
+  color: #8B8880; font-weight: 500; letter-spacing: 0.04em;
+}
+.timer-btn {
+  font-size: 10px; padding: 4px 10px; border-radius: 12px;
+  border: 1px solid #D3D1C7; background: #F5F3EE;
+  color: #4A4845; cursor: pointer; white-space: nowrap;
+  font-family: -apple-system, 'Segoe UI', sans-serif;
+}
+.timer-btn.running { background: #1A1816; color: #F7F5F0; border-color: #1A1816; }
+
+/* ── INSTRUCTION BOX ── */
+.instruction {
+  border-radius: 0 8px 8px 0;
+  padding: 10px 13px;
+  margin-bottom: 14px;
+}
+.instruction-q { font-size: 13px; font-weight: 600; margin-bottom: 3px; }
+.instruction-hint { font-size: 11.5px; font-style: italic; }
+
+/* ── TAGS ── */
+.tags-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+  margin-bottom: 18px;
+}
+.tag-btn {
+  padding: 9px 11px;
+  border-radius: 8px;
+  font-size: 12px;
+  cursor: pointer;
+  border: 1.5px solid #E0DDD7;
+  background: #FAFAF8;
+  color: #4A4845;
+  text-align: left;
+  font-family: -apple-system, 'Segoe UI', sans-serif;
+  line-height: 1.3;
+  transition: background 0.15s, border-color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.tag-btn.selected { font-weight: 600; }
+
+/* ── NEXT BUTTON ── */
+.next-btn {
+  width: 100%; padding: 13px 16px;
+  background: #1A1816; color: #F7F5F0;
+  border: none; border-radius: 10px;
+  font-size: 14px; font-weight: 600;
+  cursor: pointer; letter-spacing: 0.02em;
+  font-family: -apple-system, 'Segoe UI', sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+.next-btn:disabled {
+  background: #E0DDD7; color: #A0A09A; cursor: not-allowed;
+}
+
+/* ── DECISION SCREEN ── */
+.synthesis {
+  background: #F5F3EE; border-radius: 10px;
+  padding: 12px 14px; margin-bottom: 16px;
+}
+.synthesis-title { font-size: 12px; font-weight: 600; color: #1A1816; margin-bottom: 8px; }
+.synthesis-row { display: flex; gap: 6px; margin-bottom: 4px; align-items: flex-start; }
+.synthesis-label { font-size: 11px; font-weight: 600; min-width: 120px; flex-shrink: 0; }
+.synthesis-val { font-size: 11px; color: #4A4845; }
+
+.dq-card {
+  border: 1px solid #E0DDD7; border-radius: 10px;
+  padding: 14px; margin-bottom: 12px;
+  background: #fff;
+}
+.dq-question { font-size: 13px; font-weight: 600; color: #1A1816; margin-bottom: 10px; }
+.dq-options { display: flex; gap: 8px; }
+.dq-opt {
+  flex: 1; padding: 9px 8px;
+  border-radius: 8px; font-size: 11.5px; cursor: pointer;
+  border: 1.5px solid #E0DDD7; background: #FAFAF8;
+  color: #4A4845; font-family: -apple-system, 'Segoe UI', sans-serif;
+  text-align: center; line-height: 1.3;
+  -webkit-tap-highlight-color: transparent;
+}
+.dq-opt.selected { background: #1A1816; color: #F7F5F0; border-color: #1A1816; }
+.dq-guidance {
+  margin-top: 10px; font-size: 11.5px; color: #4A4845;
+  background: #F5F3EE; border-radius: 6px;
+  padding: 8px 10px; border-left: 3px solid #1A1816;
+  display: none;
+}
+.dq-guidance.visible { display: block; }
+
+.done-banner {
+  background: #1A1816; color: #F7F5F0; border-radius: 10px;
+  padding: 14px 16px; margin-bottom: 14px; display: none;
+}
+.done-banner.visible { display: block; }
+.done-title { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+.done-sub { font-size: 11.5px; color: #C8C4BB; line-height: 1.6; }
+
+.reset-btn {
+  width: 100%; padding: 12px;
+  background: transparent; color: #8B8880;
+  border: 1.5px solid #E0DDD7; border-radius: 10px;
+  font-size: 13px; cursor: pointer;
+  font-family: -apple-system, 'Segoe UI', sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ── LANDING SCREEN ── */
+.landing-title { font-size: 24px; font-weight: 700; color: #1A1816; line-height: 1.2; margin-bottom: 10px; }
+.landing-sub { font-size: 13px; color: #6B6865; line-height: 1.6; margin-bottom: 20px; }
+.step-preview {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 12px; border-radius: 8px; margin-bottom: 7px;
+}
+.sp-num {
+  width: 24px; height: 24px; border-radius: 50%;
+  font-size: 11px; font-weight: 700; color: #fff;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.sp-name { font-size: 12.5px; font-weight: 600; }
+.sp-sub { font-size: 11.5px; }
+.sp-dur { margin-left: auto; font-size: 10px; font-weight: 500; white-space: nowrap; }
+
+.start-btn {
+  width: 100%; padding: 14px;
+  background: #1A1816; color: #F7F5F0;
+  border: none; border-radius: 10px;
+  font-size: 14px; font-weight: 600;
+  cursor: pointer; margin-top: 18px; margin-bottom: 12px;
+  font-family: -apple-system, 'Segoe UI', sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+.principle {
+  font-size: 11px; color: #6B6865; text-align: center;
+  line-height: 1.6; padding: 10px 14px;
+  background: rgba(26,24,22,0.05); border-radius: 8px;
+}
+
+/* ── BOTTOM NAV (same as main site) ── */
+.bottom-nav {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: #1A1816; display: flex;
+  border-top: 1px solid #333;
+  z-index: 200;
+}
+.nav-item {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 8px 4px 10px;
+  color: #6B6865; font-size: 9px; letter-spacing: 0.04em;
+  text-decoration: none; cursor: pointer;
+  border: none; background: none;
+  font-family: -apple-system, 'Segoe UI', sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+.nav-item.active-nav { color: #F7F5F0; }
+.nav-icon { font-size: 18px; margin-bottom: 2px; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.card.active { animation: fadeUp 0.3s ease; }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div>
+    <div class="topbar-title">Régulation émotionnelle</div>
+    <div class="topbar-sub">PRISE DE DÉCISION</div>
+  </div>
+  <button type="button" class="back-btn" id="backBtn" onclick="goBack()" style="display:none">✕</button>
+</div>
+
+<!-- PROGRESS -->
+<div class="progress-bar" id="progressBar" style="display:none">
+  <div class="progress-seg" id="seg1"></div>
+  <div class="progress-seg" id="seg2"></div>
+  <div class="progress-seg" id="seg3"></div>
+  <div class="progress-seg" id="seg4"></div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SCREEN 0 — LANDING
+══════════════════════════════════════ -->
+<div class="card active" id="screen0">
+  <div class="landing-title">Vous traversez<br>un moment difficile ?</div>
+  <div class="landing-sub">Ce guide vous accompagne en 4 étapes (12 min) pour reconnaître vos émotions et retrouver une posture de décision lucide.</div>
+
+  <div class="step-preview" style="background:#EEEDFE">
+    <div class="sp-num" style="background:#6C63D4">1</div>
+    <div><div class="sp-name" style="color:#3C3489">Reconnaître</div><div class="sp-sub" style="color:#6C63D4">Signaux physiques</div></div>
+    <div class="sp-dur" style="color:#6C63D4">3 min</div>
+  </div>
+  <div class="step-preview" style="background:#E1F5EE">
+    <div class="sp-num" style="background:#1D9E75">2</div>
+    <div><div class="sp-name" style="color:#0A5C44">Nommer</div><div class="sp-sub" style="color:#1D9E75">Émotion ressentie</div></div>
+    <div class="sp-dur" style="color:#1D9E75">3 min</div>
+  </div>
+  <div class="step-preview" style="background:#FAEEDA">
+    <div class="sp-num" style="background:#C47A1A">3</div>
+    <div><div class="sp-name" style="color:#633806">Identifier</div><div class="sp-sub" style="color:#C47A1A">Besoin sous-jacent</div></div>
+    <div class="sp-dur" style="color:#C47A1A">3 min</div>
+  </div>
+  <div class="step-preview" style="background:#FAECE7">
+    <div class="sp-num" style="background:#D85A30">4</div>
+    <div><div class="sp-name" style="color:#712B13">Agir</div><div class="sp-sub" style="color:#D85A30">Plan d'action</div></div>
+    <div class="sp-dur" style="color:#D85A30">3 min</div>
+  </div>
+
+  <button type="button" class="start-btn" onclick="goToStep(1)">Commencer le processus →</button>
+  <div class="principle">Une émotion forte n'empêche pas de décider — elle exige qu'on la reconnaisse d'abord.</div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SCREEN 1 — PHYSIQUE
+══════════════════════════════════════ -->
+<div class="card" id="screen1">
+  <div class="step-header">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="step-num" style="background:#6C63D4">1</div>
+      <div>
+        <div class="step-label">ÉTAPE 1 · PHYSIQUE · 3 MIN</div>
+        <div class="step-title">Reconnaître</div>
+      </div>
+    </div>
+    <div class="timer-wrap">
+      <div class="timer-display" id="timer1">3:00</div>
+      <button type="button" class="timer-btn" id="timerBtn1" onclick="toggleTimer(1)">▶ Start</button>
+    </div>
+  </div>
+
+  <div class="instruction" style="background:#EEEDFE;border-left:3px solid #6C63D4">
+    <div class="instruction-q" style="color:#3C3489">Où est-ce dans votre corps en ce moment ?</div>
+    <div class="instruction-hint" style="color:#6C63D4">Reconnectez-vous à la situation. Que ressentez-vous physiquement ?</div>
+  </div>
+
+  <div class="tags-grid" id="tags1">
+    <button type="button" class="tag-btn" data-step="1" data-val="Mains moites / tremblements" style="--c:#6C63D4;--l:#EEEDFE;--d:#3C3489" onclick="toggleTag(this)">Mains moites / tremblements</button>
+    <button type="button" class="tag-btn" data-step="1" data-val="Souffle court" style="--c:#6C63D4;--l:#EEEDFE;--d:#3C3489" onclick="toggleTag(this)">Souffle court</button>
+    <button type="button" class="tag-btn" data-step="1" data-val="Nœud à l'estomac" style="--c:#6C63D4;--l:#EEEDFE;--d:#3C3489" onclick="toggleTag(this)">Nœud à l'estomac</button>
+    <button type="button" class="tag-btn" data-step="1" data-val="Dents / mâchoire serrées" style="--c:#6C63D4;--l:#EEEDFE;--d:#3C3489" onclick="toggleTag(this)">Dents / mâchoire serrées</button>
+    <button type="button" class="tag-btn" data-step="1" data-val="Épaules tendues" style="--c:#6C63D4;--l:#EEEDFE;--d:#3C3489" onclick="toggleTag(this)">Épaules tendues</button>
+    <button type="button" class="tag-btn" data-step="1" data-val="Corps lourd / tétanisé" style="--c:#6C63D4;--l:#EEEDFE;--d:#3C3489" onclick="toggleTag(this)">Corps lourd / tétanisé</button>
+    <button type="button" class="tag-btn" data-step="1" data-val="Chair de poule" style="--c:#6C63D4;--l:#EEEDFE;--d:#3C3489" onclick="toggleTag(this)">Chair de poule</button>
+    <button type="button" class="tag-btn" data-step="1" data-val="Poids sur la poitrine" style="--c:#6C63D4;--l:#EEEDFE;--d:#3C3489" onclick="toggleTag(this)">Poids sur la poitrine</button>
+    <button type="button" class="tag-btn" data-step="1" data-val="Larmes aux yeux" style="--c:#6C63D4;--l:#EEEDFE;--d:#3C3489" onclick="toggleTag(this)">Larmes aux yeux</button>
+    <button type="button" class="tag-btn" data-step="1" data-val="Rougeurs / sueur" style="--c:#6C63D4;--l:#EEEDFE;--d:#3C3489" onclick="toggleTag(this)">Rougeurs / sueur</button>
+  </div>
+  <button type="button" class="next-btn" id="next1" onclick="goToStep(2)" disabled>Étape suivante →</button>
+</div>
+
+<!-- ══════════════════════════════════════
+     SCREEN 2 — ÉMOTION
+══════════════════════════════════════ -->
+<div class="card" id="screen2">
+  <div class="step-header">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="step-num" style="background:#1D9E75">2</div>
+      <div>
+        <div class="step-label">ÉTAPE 2 · ÉMOTION · 3 MIN</div>
+        <div class="step-title">Nommer</div>
+      </div>
+    </div>
+    <div class="timer-wrap">
+      <div class="timer-display" id="timer2">3:00</div>
+      <button type="button" class="timer-btn" id="timerBtn2" onclick="toggleTimer(2)">▶ Start</button>
+    </div>
+  </div>
+
+  <div class="instruction" style="background:#E1F5EE;border-left:3px solid #1D9E75">
+    <div class="instruction-q" style="color:#0A5C44">Quelle émotion correspond le mieux à ce que vous ressentez ?</div>
+    <div class="instruction-hint" style="color:#1D9E75">Prenez le temps — nommer l'émotion réduit déjà son intensité.</div>
+  </div>
+
+  <div class="tags-grid" id="tags2">
+    <button type="button" class="tag-btn" data-step="2" data-val="Frustré(e)" onclick="toggleTag(this)">Frustré(e)</button>
+    <button type="button" class="tag-btn" data-step="2" data-val="Anxieux(se)" onclick="toggleTag(this)">Anxieux(se)</button>
+    <button type="button" class="tag-btn" data-step="2" data-val="En colère" onclick="toggleTag(this)">En colère</button>
+    <button type="button" class="tag-btn" data-step="2" data-val="Blessé(e)" onclick="toggleTag(this)">Blessé(e)</button>
+    <button type="button" class="tag-btn" data-step="2" data-val="Sous pression" onclick="toggleTag(this)">Sous pression</button>
+    <button type="button" class="tag-btn" data-step="2" data-val="Épuisé(e)" onclick="toggleTag(this)">Épuisé(e)</button>
+    <button type="button" class="tag-btn" data-step="2" data-val="Déçu(e)" onclick="toggleTag(this)">Déçu(e)</button>
+    <button type="button" class="tag-btn" data-step="2" data-val="Inquiet(e)" onclick="toggleTag(this)">Inquiet(e)</button>
+    <button type="button" class="tag-btn" data-step="2" data-val="Indécis(e)" onclick="toggleTag(this)">Indécis(e)</button>
+    <button type="button" class="tag-btn" data-step="2" data-val="Seul(e)" onclick="toggleTag(this)">Seul(e)</button>
+    <button type="button" class="tag-btn" data-step="2" data-val="Honteux(se)" onclick="toggleTag(this)">Honteux(se)</button>
+    <button type="button" class="tag-btn" data-step="2" data-val="Angoissé(e)" onclick="toggleTag(this)">Angoissé(e)</button>
+    <button type="button" class="tag-btn" data-step="2" data-val="Méfiant(e)" onclick="toggleTag(this)">Méfiant(e)</button>
+    <button type="button" class="tag-btn" data-step="2" data-val="Vexé(e)" onclick="toggleTag(this)">Vexé(e)</button>
+    <button type="button" class="tag-btn" data-step="2" data-val="Déstabilisé(e)" onclick="toggleTag(this)">Déstabilisé(e)</button>
+    <button type="button" class="tag-btn" data-step="2" data-val="Abandonné(e)" onclick="toggleTag(this)">Abandonné(e)</button>
+  </div>
+  <button type="button" class="next-btn" id="next2" onclick="goToStep(3)" disabled>Étape suivante →</button>
+</div>
+
+<!-- ══════════════════════════════════════
+     SCREEN 3 — BESOIN
+══════════════════════════════════════ -->
+<div class="card" id="screen3">
+  <div class="step-header">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="step-num" style="background:#C47A1A">3</div>
+      <div>
+        <div class="step-label">ÉTAPE 3 · BESOIN · 3 MIN</div>
+        <div class="step-title">Identifier</div>
+      </div>
+    </div>
+    <div class="timer-wrap">
+      <div class="timer-display" id="timer3">3:00</div>
+      <button type="button" class="timer-btn" id="timerBtn3" onclick="toggleTimer(3)">▶ Start</button>
+    </div>
+  </div>
+
+  <div class="instruction" style="background:#FAEEDA;border-left:3px solid #C47A1A">
+    <div class="instruction-q" style="color:#633806">Quel besoin non satisfait se cache derrière cette émotion ?</div>
+    <div class="instruction-hint" style="color:#C47A1A">L'émotion est un signal — elle pointe vers un besoin. Lequel ?</div>
+  </div>
+
+  <div class="tags-grid" id="tags3">
+    <button type="button" class="tag-btn" data-step="3" data-val="Reconnaissance" onclick="toggleTag(this)">Reconnaissance</button>
+    <button type="button" class="tag-btn" data-step="3" data-val="Clarté" onclick="toggleTag(this)">Clarté</button>
+    <button type="button" class="tag-btn" data-step="3" data-val="Sécurité" onclick="toggleTag(this)">Sécurité</button>
+    <button type="button" class="tag-btn" data-step="3" data-val="Autonomie" onclick="toggleTag(this)">Autonomie</button>
+    <button type="button" class="tag-btn" data-step="3" data-val="Confiance" onclick="toggleTag(this)">Confiance</button>
+    <button type="button" class="tag-btn" data-step="3" data-val="Respect" onclick="toggleTag(this)">Respect</button>
+    <button type="button" class="tag-btn" data-step="3" data-val="Sens" onclick="toggleTag(this)">Sens</button>
+    <button type="button" class="tag-btn" data-step="3" data-val="Justice" onclick="toggleTag(this)">Justice</button>
+    <button type="button" class="tag-btn" data-step="3" data-val="Soutien" onclick="toggleTag(this)">Soutien</button>
+    <button type="button" class="tag-btn" data-step="3" data-val="Appartenance" onclick="toggleTag(this)">Appartenance</button>
+    <button type="button" class="tag-btn" data-step="3" data-val="Équilibre" onclick="toggleTag(this)">Équilibre</button>
+    <button type="button" class="tag-btn" data-step="3" data-val="Liberté" onclick="toggleTag(this)">Liberté</button>
+    <button type="button" class="tag-btn" data-step="3" data-val="Harmonie" onclick="toggleTag(this)">Harmonie</button>
+    <button type="button" class="tag-btn" data-step="3" data-val="Estime de soi" onclick="toggleTag(this)">Estime de soi</button>
+    <button type="button" class="tag-btn" data-step="3" data-val="Coopération" onclick="toggleTag(this)">Coopération</button>
+    <button type="button" class="tag-btn" data-step="3" data-val="Structure" onclick="toggleTag(this)">Structure</button>
+  </div>
+  <button type="button" class="next-btn" id="next3" onclick="goToStep(4)" disabled>Étape suivante →</button>
+</div>
+
+<!-- ══════════════════════════════════════
+     SCREEN 4 — ACTION
+══════════════════════════════════════ -->
+<div class="card" id="screen4">
+  <div class="step-header">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="step-num" style="background:#D85A30">4</div>
+      <div>
+        <div class="step-label">ÉTAPE 4 · ACTION · 3 MIN</div>
+        <div class="step-title">Agir</div>
+      </div>
+    </div>
+    <div class="timer-wrap">
+      <div class="timer-display" id="timer4">3:00</div>
+      <button type="button" class="timer-btn" id="timerBtn4" onclick="toggleTimer(4)">▶ Start</button>
+    </div>
+  </div>
+
+  <div class="instruction" style="background:#FAECE7;border-left:3px solid #D85A30">
+    <div class="instruction-q" style="color:#712B13">Quelle action allez-vous mettre en œuvre pour répondre à ce besoin ?</div>
+    <div class="instruction-hint" style="color:#D85A30">Peut être une action seul(e), ou une demande à faire à quelqu'un.</div>
+  </div>
+
+  <div class="tags-grid" id="tags4">
+    <button type="button" class="tag-btn" data-step="4" data-val="Prendre du recul / souffler" onclick="toggleTag(this)">Prendre du recul / souffler</button>
+    <button type="button" class="tag-btn" data-step="4" data-val="En parler à une personne de confiance" onclick="toggleTag(this)">En parler à une personne de confiance</button>
+    <button type="button" class="tag-btn" data-step="4" data-val="Faire une demande claire à mon N+1" onclick="toggleTag(this)">Faire une demande claire à mon N+1</button>
+    <button type="button" class="tag-btn" data-step="4" data-val="Reporter la décision" onclick="toggleTag(this)">Reporter la décision</button>
+    <button type="button" class="tag-btn" data-step="4" data-val="Exprimer mes besoins directement" onclick="toggleTag(this)">Exprimer mes besoins directement</button>
+    <button type="button" class="tag-btn" data-step="4" data-val="Poser une limite" onclick="toggleTag(this)">Poser une limite</button>
+    <button type="button" class="tag-btn" data-step="4" data-val="Chercher une clarification" onclick="toggleTag(this)">Chercher une clarification</button>
+    <button type="button" class="tag-btn" data-step="4" data-val="Déléguer une partie" onclick="toggleTag(this)">Déléguer une partie</button>
+  </div>
+  <button type="button" class="next-btn" id="next4" onclick="goToStep(5)" disabled>Passer aux questions de décision →</button>
+</div>
+
+<!-- ══════════════════════════════════════
+     SCREEN 5 — DÉCISION
+══════════════════════════════════════ -->
+<div class="card" id="screen5">
+  <div style="margin-bottom:16px">
+    <div style="font-size:20px;font-weight:700;color:#1A1816;margin-bottom:3px">Du ressenti à la décision</div>
+    <div style="font-size:10px;color:#8B8880;letter-spacing:0.06em">3 QUESTIONS AVANT D'AGIR</div>
+  </div>
+
+  <!-- Synthesis -->
+  <div class="synthesis">
+    <div class="synthesis-title">Ce que vous avez identifié :</div>
+    <div class="synthesis-row">
+      <span class="synthesis-label" style="color:#6C63D4">Signaux physiques :</span>
+      <span class="synthesis-val" id="syn1">—</span>
+    </div>
+    <div class="synthesis-row">
+      <span class="synthesis-label" style="color:#1D9E75">Émotions :</span>
+      <span class="synthesis-val" id="syn2">—</span>
+    </div>
+    <div class="synthesis-row">
+      <span class="synthesis-label" style="color:#C47A1A">Besoins :</span>
+      <span class="synthesis-val" id="syn3">—</span>
+    </div>
+    <div class="synthesis-row">
+      <span class="synthesis-label" style="color:#D85A30">Action envisagée :</span>
+      <span class="synthesis-val" id="syn4">—</span>
+    </div>
+  </div>
+
+  <!-- Decision Q1 -->
+  <div class="dq-card" id="dqCard0">
+    <div class="dq-question">Suis-je en état de décider maintenant ?</div>
+    <div class="dq-options">
+      <button type="button" class="dq-opt" id="dqY0" onclick="answerDQ(0,'yes')">Oui, je me sens suffisamment stable</button>
+      <button type="button" class="dq-opt" id="dqN0" onclick="answerDQ(0,'no')">Non, l'émotion est trop intense</button>
+    </div>
+    <div class="dq-guidance" id="dqG0y">Vous pouvez avancer. Gardez en tête le besoin identifié pour contextualiser votre décision.</div>
+    <div class="dq-guidance" id="dqG0n">Différez si possible. Prévenez les parties prenantes. Revenez une fois l'émotion régulée.</div>
+  </div>
+
+  <!-- Decision Q2 -->
+  <div class="dq-card" id="dqCard1">
+    <div class="dq-question">Mon émotion m'informe-t-elle ou me pilote-t-elle ?</div>
+    <div class="dq-options">
+      <button type="button" class="dq-opt" id="dqY1" onclick="answerDQ(1,'yes')">Elle m'informe — je la comprends</button>
+      <button type="button" class="dq-opt" id="dqN1" onclick="answerDQ(1,'no')">Elle me pilote — je suis en réaction</button>
+    </div>
+    <div class="dq-guidance" id="dqG1y">Bien. Intégrez ce signal comme donnée dans votre décision.</div>
+    <div class="dq-guidance" id="dqG1n">Pause. Repassez par l'étape 3 (besoin) avant toute décision.</div>
+  </div>
+
+  <!-- Decision Q3 -->
+  <div class="dq-card" id="dqCard2">
+    <div class="dq-question">Mon besoin personnel est-il lié à la décision à prendre ?</div>
+    <div class="dq-options">
+      <button type="button" class="dq-opt" id="dqY2" onclick="answerDQ(2,'yes')">Oui, ils sont entremêlés</button>
+      <button type="button" class="dq-opt" id="dqN2" onclick="answerDQ(2,'no')">Non, je peux les séparer</button>
+    </div>
+    <div class="dq-guidance" id="dqG2y">Soyez vigilant(e) : distinguez explicitement intérêt personnel et intérêt collectif.</div>
+    <div class="dq-guidance" id="dqG2n">Bonne posture. Vous pouvez décider en gardant le cap sur l'objectif commun.</div>
+  </div>
+
+  <!-- Done banner -->
+  <div class="done-banner" id="doneBanner">
+    <div class="done-title">Processus de régulation complété.</div>
+    <div class="done-sub">L'émotion a été reconnue, nommée, reliée à un besoin, et une action a été choisie. Vous êtes maintenant en meilleure posture pour décider avec discernement.</div>
+  </div>
+
+  <button type="button" class="reset-btn" onclick="resetAll()">↺ Recommencer une nouvelle situation</button>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <a href="index.html" class="nav-item">
+    <div class="nav-icon">🏠</div>
+    <div>Accueil</div>
+  </a>
+  <a href="quiz.html" class="nav-item">
+    <div class="nav-icon">🧭</div>
+    <div>Diagnostic</div>
+  </a>
+  <a href="regulation.html" class="nav-item active-nav">
+    <div class="nav-icon">🌡️</div>
+    <div>Régulation</div>
+  </a>
+  <a href="l1.html" class="nav-item">
+    <div class="nav-icon">📋</div>
+    <div>Livrables</div>
+  </a>
+</nav>
+
+<script>
+// ── STATE ──
+var selections = { 1: [], 2: [], 3: [], 4: [] };
+var timers = { 1: null, 2: null, 3: null, 4: null };
+var timerSeconds = { 1: 180, 2: 180, 3: 180, 4: 180 };
+var timerRunning = { 1: false, 2: false, 3: false, 4: false };
+var dqAnswers = {};
+var currentScreen = 0;
+
+// ── NAVIGATION ──
+function goToStep(n) {
+  // hide all
+  document.getElementById('screen0').style.display = 'none';
+  document.getElementById('screen1').style.display = 'none';
+  document.getElementById('screen2').style.display = 'none';
+  document.getElementById('screen3').style.display = 'none';
+  document.getElementById('screen4').style.display = 'none';
+  document.getElementById('screen5').style.display = 'none';
+
+  // show target
+  document.getElementById('screen' + n).style.display = 'block';
+
+  // progress bar
+  var pb = document.getElementById('progressBar');
+  var bb = document.getElementById('backBtn');
+  if (n === 0) {
+    pb.style.display = 'none';
+    bb.style.display = 'none';
+  } else {
+    pb.style.display = 'flex';
+    bb.style.display = 'block';
+    for (var i = 1; i <= 4; i++) {
+      var seg = document.getElementById('seg' + i);
+      if (i <= n) {
+        seg.style.background = '#1A1816';
+      } else {
+        seg.style.background = '#D3D1C7';
+      }
+    }
+  }
+
+  // populate synthesis on screen 5
+  if (n === 5) {
+    document.getElementById('syn1').textContent = selections[1].join(', ') || '—';
+    document.getElementById('syn2').textContent = selections[2].join(', ') || '—';
+    document.getElementById('syn3').textContent = selections[3].join(', ') || '—';
+    document.getElementById('syn4').textContent = selections[4].join(', ') || '—';
+  }
+
+  currentScreen = n;
+  window.scrollTo(0, 0);
+}
+
+function goBack() {
+  if (currentScreen > 0) {
+    goToStep(currentScreen - 1);
+  }
+}
+
+// ── TAG SELECTION ──
+function toggleTag(btn) {
+  var step = parseInt(btn.getAttribute('data-step'));
+  var val = btn.getAttribute('data-val');
+
+  if (btn.classList.contains('selected')) {
+    btn.classList.remove('selected');
+    btn.style.background = '#FAFAF8';
+    btn.style.borderColor = '#E0DDD7';
+    btn.style.color = '#4A4845';
+    btn.style.fontWeight = '400';
+    // remove from selections
+    var idx = selections[step].indexOf(val);
+    if (idx > -1) selections[step].splice(idx, 1);
+  } else {
+    btn.classList.add('selected');
+    var colors = { 1: ['#EEEDFE','#6C63D4','#3C3489'], 2: ['#E1F5EE','#1D9E75','#0A5C44'], 3: ['#FAEEDA','#C47A1A','#633806'], 4: ['#FAECE7','#D85A30','#712B13'] };
+    var c = colors[step];
+    btn.style.background = c[0];
+    btn.style.borderColor = c[1];
+    btn.style.color = c[2];
+    btn.style.fontWeight = '600';
+    selections[step].push(val);
+  }
+
+  // update next button
+  var nextBtn = document.getElementById('next' + step);
+  if (nextBtn) {
+    if (selections[step].length > 0) {
+      nextBtn.disabled = false;
+    } else {
+      nextBtn.disabled = true;
+    }
+  }
+}
+
+// ── TIMER ──
+function toggleTimer(n) {
+  if (timerRunning[n]) {
+    // pause
+    clearInterval(timers[n]);
+    timerRunning[n] = false;
+    document.getElementById('timerBtn' + n).textContent = '▶ Reprendre';
+    document.getElementById('timerBtn' + n).classList.remove('running');
+  } else {
+    if (timerSeconds[n] <= 0) timerSeconds[n] = 180;
+    timerRunning[n] = true;
+    document.getElementById('timerBtn' + n).textContent = '⏸ Pause';
+    document.getElementById('timerBtn' + n).classList.add('running');
+    timers[n] = setInterval(function(step) {
+      return function() {
+        timerSeconds[step]--;
+        var m = Math.floor(timerSeconds[step] / 60);
+        var s = timerSeconds[step] % 60;
+        document.getElementById('timer' + step).textContent = m + ':' + (s < 10 ? '0' : '') + s;
+        if (timerSeconds[step] <= 0) {
+          clearInterval(timers[step]);
+          timerRunning[step] = false;
+          document.getElementById('timerBtn' + step).textContent = '✓ Terminé';
+          document.getElementById('timerBtn' + step).classList.remove('running');
+        }
+      };
+    }(n), 1000);
+  }
+}
+
+// ── DECISION QUESTIONS ──
+var dqGuidance = {
+  0: { yes: 'Vous pouvez avancer. Gardez en tête le besoin identifié pour contextualiser votre décision.', no: 'Différez si possible. Prévenez les parties prenantes. Revenez une fois l\'émotion régulée.' },
+  1: { yes: 'Bien. Intégrez ce signal comme donnée dans votre décision.', no: 'Pause. Repassez par l\'étape 3 (besoin) avant toute décision.' },
+  2: { yes: 'Soyez vigilant(e) : distinguez explicitement intérêt personnel et intérêt collectif.', no: 'Bonne posture. Vous pouvez décider en gardant le cap sur l\'objectif commun.' }
+};
+
+function answerDQ(idx, val) {
+  dqAnswers[idx] = val;
+
+  // update button styles
+  var yBtn = document.getElementById('dqY' + idx);
+  var nBtn = document.getElementById('dqN' + idx);
+  if (val === 'yes') {
+    yBtn.classList.add('selected');
+    nBtn.classList.remove('selected');
+    yBtn.style.background = '#1A1816';
+    yBtn.style.color = '#F7F5F0';
+    yBtn.style.borderColor = '#1A1816';
+    nBtn.style.background = '#FAFAF8';
+    nBtn.style.color = '#4A4845';
+    nBtn.style.borderColor = '#E0DDD7';
+  } else {
+    nBtn.classList.add('selected');
+    yBtn.classList.remove('selected');
+    nBtn.style.background = '#1A1816';
+    nBtn.style.color = '#F7F5F0';
+    nBtn.style.borderColor = '#1A1816';
+    yBtn.style.background = '#FAFAF8';
+    yBtn.style.color = '#4A4845';
+    yBtn.style.borderColor = '#E0DDD7';
+  }
+
+  // show guidance
+  document.getElementById('dqG' + idx + 'y').style.display = val === 'yes' ? 'block' : 'none';
+  document.getElementById('dqG' + idx + 'n').style.display = val === 'no' ? 'block' : 'none';
+
+  // check if all answered
+  if (Object.keys(dqAnswers).length === 3) {
+    document.getElementById('doneBanner').classList.add('visible');
+    document.getElementById('doneBanner').style.display = 'block';
+  }
+}
+
+// ── RESET ──
+function resetAll() {
+  selections = { 1: [], 2: [], 3: [], 4: [] };
+  dqAnswers = {};
+  timerSeconds = { 1: 180, 2: 180, 3: 180, 4: 180 };
+  for (var i = 1; i <= 4; i++) {
+    clearInterval(timers[i]);
+    timerRunning[i] = false;
+    var tb = document.getElementById('timerBtn' + i);
+    if (tb) { tb.textContent = '▶ Start'; tb.classList.remove('running'); }
+    var td = document.getElementById('timer' + i);
+    if (td) td.textContent = '3:00';
+    var nb = document.getElementById('next' + i);
+    if (nb) nb.disabled = true;
+    // reset tag buttons
+    var allTags = document.querySelectorAll('[data-step="' + i + '"]');
+    for (var j = 0; j < allTags.length; j++) {
+      allTags[j].classList.remove('selected');
+      allTags[j].style.background = '#FAFAF8';
+      allTags[j].style.borderColor = '#E0DDD7';
+      allTags[j].style.color = '#4A4845';
+      allTags[j].style.fontWeight = '400';
+    }
+  }
+  // reset DQ buttons
+  for (var k = 0; k < 3; k++) {
+    var yb = document.getElementById('dqY' + k);
+    var nb2 = document.getElementById('dqN' + k);
+    if (yb) { yb.classList.remove('selected'); yb.style.background = '#FAFAF8'; yb.style.color = '#4A4845'; yb.style.borderColor = '#E0DDD7'; }
+    if (nb2) { nb2.classList.remove('selected'); nb2.style.background = '#FAFAF8'; nb2.style.color = '#4A4845'; nb2.style.borderColor = '#E0DDD7'; }
+    var gy = document.getElementById('dqG' + k + 'y');
+    var gn = document.getElementById('dqG' + k + 'n');
+    if (gy) gy.style.display = 'none';
+    if (gn) gn.style.display = 'none';
+  }
+  var db = document.getElementById('doneBanner');
+  if (db) { db.classList.remove('visible'); db.style.display = 'none'; }
+
+  goToStep(0);
+}
+
+// ── INIT ──
+// All screens hidden except screen0 via CSS — screen0 has class 'active' but we manage via display
+// Make sure only screen0 is shown
+document.getElementById('screen1').style.display = 'none';
+document.getElementById('screen2').style.display = 'none';
+document.getElementById('screen3').style.display = 'none';
+document.getElementById('screen4').style.display = 'none';
+document.getElementById('screen5').style.display = 'none';
+document.getElementById('progressBar').style.display = 'none';
+document.getElementById('backBtn').style.display = 'none';
+</script>
+</body>
+</html>

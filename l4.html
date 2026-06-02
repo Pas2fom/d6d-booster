@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Matrice OECA</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+/* BASE MOBILE-FIRST */
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --c1:#3C3489;--c1l:#EEEDFE;
+  --c2:#085041;--c2l:#E1F5EE;--c2m:#5DCAA5;
+  --c3:#633806;--c3l:#FAEEDA;--c3m:#EF9F27;
+  --c4:#712B13;--c4l:#FAECE7;--c4m:#F0997B;
+  --c5:#0C447C;--c5l:#E6F1FB;--c5m:#85B7EB;
+  --dark:#1A2744;
+  --border:#e0e0e0;--muted:#888;--text:#1a1a1a;--bg:#f6f6f4;
+  --nav-h:56px;--tab-h:64px;
+}
+html,body{min-height:100%;background:var(--bg);font-family:system-ui,-apple-system,sans-serif;color:var(--text);}
+
+/* NAV TOP */
+.top-nav{position:fixed;top:0;left:0;right:0;z-index:50;height:var(--nav-h);background:var(--dark);display:flex;align-items:center;gap:10px;padding:0 16px;}
+.top-nav-back{background:none;border:none;color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;padding:4px;}
+.top-nav-title{font-size:14px;font-weight:500;color:#fff;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.top-nav-pdf{background:rgba(255,255,255,.15);border:none;color:#fff;font-size:12px;padding:6px 12px;border-radius:16px;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:4px;}
+
+/* SCROLL BODY */
+.page-body{margin-top:var(--nav-h);padding:16px;padding-bottom:calc(var(--tab-h)+16px);max-width:600px;margin-left:auto;margin-right:auto;}
+.page-body.no-tab{padding-bottom:24px;}
+
+/* STEP NAV */
+.step-nav{display:flex;align-items:center;gap:0;margin-bottom:20px;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.step-dot{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--border);background:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#888;flex-shrink:0;}
+.step-dot.active{background:var(--accent,#3C3489);color:#fff;border-color:var(--accent,#3C3489);}
+.step-dot.done{background:#E1F5EE;color:#085041;border-color:#5DCAA5;}
+.step-line{flex:1;height:1px;background:var(--border);min-width:12px;}
+
+/* CARDS */
+.card{background:#fff;border-radius:14px;padding:16px;margin-bottom:12px;border:0.5px solid var(--border);}
+.card-title{font-size:14px;font-weight:600;margin-bottom:4px;}
+.card-sub{font-size:12px;color:var(--muted);margin-bottom:12px;}
+
+/* SECTION LABEL */
+.slabel{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;margin-top:16px;display:block;}
+
+/* FIELD */
+.field{margin-bottom:14px;}
+.field label{font-size:13px;color:#555;margin-bottom:6px;display:block;line-height:1.4;}
+.field input,.field textarea,.field select{
+  width:100%;font-size:16px;padding:11px 14px;
+  border:1px solid var(--border);border-radius:10px;
+  background:#fff;color:var(--text);
+  -webkit-appearance:none;appearance:none;
+}
+.field textarea{resize:vertical;min-height:72px;line-height:1.5;}
+.field input:focus,.field textarea:focus{outline:none;border-color:var(--accent,#3C3489);}
+
+/* PILLS (radio) */
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:4px;}
+.pill{padding:8px 14px;border-radius:20px;border:1px solid var(--border);font-size:13px;cursor:pointer;background:#fff;color:var(--text);transition:background .12s;-webkit-tap-highlight-color:transparent;}
+.pill.sel{background:var(--accent-l,#EEEDFE);color:var(--accent,#3C3489);border-color:var(--accent,#3C3489);}
+
+/* BUTTONS */
+.btn-row{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;}
+.btn{font-size:14px;padding:12px 20px;border-radius:10px;border:1px solid var(--border);background:#fff;color:var(--text);cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;}
+.btn.pri{background:var(--accent,#3C3489);color:#fff;border-color:var(--accent,#3C3489);flex:1;}
+.btn.sec{background:#fff;flex-shrink:0;}
+.btn.pdf{background:var(--accent-l,#EEEDFE);color:var(--accent,#3C3489);border-color:var(--accent,#3C3489);flex:1;}
+.btn:active{transform:scale(.97);}
+.btn:disabled{opacity:.4;cursor:not-allowed;}
+.btn-full{width:100%;}
+
+/* GRID 2 col */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.grid4{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+@media(min-width:480px){.grid4{grid-template-columns:repeat(4,1fr);}}
+
+/* RESULT TABLE → stacked on mobile */
+.result-table{width:100%;border-collapse:collapse;}
+.result-table th{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:8px 12px;text-align:left;border-bottom:1px solid var(--border);background:#f6f6f4;}
+.result-table td{padding:10px 12px;border-bottom:0.5px solid var(--border);font-size:13px;vertical-align:top;}
+.result-table tr:last-child td{border-bottom:none;}
+
+/* COUNTER */
+.counter{font-size:12px;color:var(--muted);margin-bottom:10px;}
+.counter span{font-weight:600;color:var(--accent,#3C3489);}
+
+/* HEADER RESULT */
+.result-header{background:var(--accent-l,#EEEDFE);border-radius:12px;padding:16px;margin-bottom:16px;}
+.result-header .rh-label{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;}
+.result-header .rh-name{font-size:18px;font-weight:600;color:var(--accent,#3C3489);}
+.result-header .rh-sub{font-size:12px;color:var(--muted);margin-top:2px;}
+
+/* PROGRESS BAR */
+.pbar-wrap{margin-bottom:10px;}
+.pbar-row{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:3px;}
+.pbar-track{height:6px;background:#f0f0f0;border-radius:3px;overflow:hidden;}
+.pbar-fill{height:100%;border-radius:3px;transition:width .4s;}
+
+/* PANEL */
+.panel{display:none;}
+.panel.active{display:block;}
+
+/* MISC */
+.alert-box{border-radius:10px;padding:12px 14px;font-size:13px;display:flex;align-items:flex-start;gap:8px;margin-top:6px;}
+.alert-box i{font-size:16px;flex-shrink:0;margin-top:1px;}
+.chip-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:14px;font-size:11px;font-weight:500;background:#f0f0f0;color:#555;}
+
+:root{--accent:#854F0B;--accent-l:#FAEEDA;}
+
+</style>
+</head>
+<body>
+<nav class="top-nav">
+  <a href="index.html" class="top-nav-back" aria-label="Accueil"><i class="ti ti-arrow-left"></i></a>
+  <span class="top-nav-title">4 · Matrice OECA</span>
+  <button type="button" class="top-nav-pdf" onclick="doPrint()"><i class="ti ti-download"></i> PDF</button>
+</nav>
+<div class="page-body">
+
+<div class="step-nav" id="snav"></div>
+<div id="p1" style="display:block;">
+  <span class="slabel">O · Objet — Définir la décision</span>
+  <div class="field"><label>Quelle décision dois-je prendre ?</label><textarea id="objet" placeholder="Ex. Choisir entre 3 prestataires pour notre formation Q3."></textarea></div>
+  <div class="field"><label>Objectif principal</label><input type="text" id="objectif" placeholder="Ex. Maximiser l'impact terrain en 6 mois."></div>
+  <div class="field"><label>Contraintes non négociables</label><input type="text" id="contraintes" placeholder="Ex. Budget &lt; 20k€, avant fin septembre."></div>
+  <div class="field"><label>Autres éléments à prendre en compte</label><textarea id="autres-oeca" placeholder="Ex. contexte politique interne, parties prenantes, historique, acceptabilité, risques non quantifiables…"></textarea></div>
+  <div class="field"><label>Horizon</label><div class="pills" id="pg-horizon"></div></div>
+  <span class="slabel">Critères (3 à 5)</span>
+  <div id="crit-list"></div>
+  <button type="button" class="btn" style="font-size:12px;padding:8px 14px;margin-bottom:14px;" onclick="addCrit()">+ Ajouter un critère</button>
+  <div class="field"><label>Options envisagées (une par ligne)</label><textarea id="options" placeholder="Option A : …&#10;Option B : …&#10;Option C : …" style="min-height:100px;"></textarea></div>
+  <div class="btn-row"><button type="button" class="btn pri" onclick="go(2)">Évaluer →</button></div>
+</div>
+<div id="p2" style="display:none;">
+  <span class="slabel">E · Évaluation — Coter chaque option</span>
+  <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;" id="opt-tabs"></div>
+  <div id="opt-forms"></div>
+  <div class="btn-row"><button type="button" class="btn sec" onclick="go(1)">← Retour</button><button type="button" class="btn pri" onclick="go(3)">Risques →</button></div>
+</div>
+<div id="p3" style="display:none;">
+  <span class="slabel">C · Choix — Risques &amp; opportunités</span>
+  <div id="ro-forms"></div>
+  <div class="btn-row"><button type="button" class="btn sec" onclick="go(2)">← Retour</button><button type="button" class="btn pri" onclick="go(4)">Générer →</button></div>
+</div>
+<div id="p4" style="display:none;">
+  <div id="result-out"></div>
+  <div class="btn-row" style="margin-top:16px;">
+    <button type="button" class="btn sec" onclick="go(1)">← Recommencer</button>
+    <button type="button" class="btn pdf" onclick="doPrint()"><i class="ti ti-download"></i> PDF</button>
+  </div>
+</div>
+
+</div>
+<script>
+
+const HORIZONS=['Court terme (< 1 mois)','Moyen terme (1–6 mois)','Long terme (> 6 mois)'];
+let horizon='',crits=[{id:'c1',label:'Qualité',poids:5},{id:'c2',label:'Coût',poids:4},{id:'c3',label:'Délai',poids:3}];
+let notes={},roData={},aOptTab=0,optList=[],cidx=4;
+
+function rg(cid,opts,key,cur){
+  const w=document.getElementById(cid);if(!w)return;w.innerHTML='';
+  opts.forEach(o=>{const b=document.createElement('button');b.className='pill'+(cur===o?' sel':'');
+    b.textContent=o;b.onclick=()=>{if(key==='horizon')horizon=o;cur=o;rg(cid,opts,key,o);};w.appendChild(b);});
+}
+rg('pg-horizon',HORIZONS,'horizon',horizon);
+
+function renderCrits(){
+  const l=document.getElementById('crit-list');l.innerHTML='';
+  crits.forEach(c=>{
+    const r=document.createElement('div');r.style.cssText='display:flex;align-items:center;gap:8px;margin-bottom:8px;';
+    r.innerHTML=`<input type="text" value="${c.label}" placeholder="Critère" style="flex:1;font-size:14px;padding:10px 12px;border:1px solid #e0e0e0;border-radius:10px;" onchange="updCrit('${c.id}',this.value)">
+      <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;">
+        <span style="font-size:11px;color:#888;">×</span>
+        <input type="number" min="1" max="10" value="${c.poids}" style="width:48px;padding:10px 6px;border:1px solid #e0e0e0;border-radius:10px;font-size:14px;text-align:center;" onchange="updPoids('${c.id}',this.value)">
+      </div>
+      <button type="button" onclick="delCrit('${c.id}')" ${crits.length<=2?'disabled':''} style="width:34px;height:34px;border-radius:8px;border:1px solid #e0e0e0;background:#fff;font-size:16px;cursor:pointer;flex-shrink:0;">×</button>`;
+    l.appendChild(r);
+  });
+}
+function updCrit(id,v){const c=crits.find(x=>x.id===id);if(c)c.label=v;}
+function updPoids(id,v){const c=crits.find(x=>x.id===id);if(c)c.poids=+v||1;}
+function delCrit(id){crits=crits.filter(x=>x.id!==id);renderCrits();}
+function addCrit(){if(crits.length>=5)return;crits.push({id:'c'+cidx++,label:'',poids:3});renderCrits();}
+renderCrits();
+
+function parseOpts(){return(document.getElementById('options').value||'').trim().split('\n').map(l=>l.trim()).filter(Boolean).slice(0,5);}
+
+function renderOptForms(){
+  optList=parseOpts();
+  const tabs=document.getElementById('opt-tabs'),forms=document.getElementById('opt-forms');
+  tabs.innerHTML='';forms.innerHTML='';
+  optList.forEach((opt,idx)=>{
+    const tab=document.createElement('button');
+    tab.className='btn'+(aOptTab===idx?' pri':' sec');tab.style.cssText='font-size:12px;padding:7px 10px;flex:1;';
+    tab.textContent='Opt.'+(idx+1);tab.onclick=()=>{aOptTab=idx;renderOptForms();};tabs.appendChild(tab);
+    const form=document.createElement('div');form.style.display=aOptTab===idx?'block':'none';
+    let starsH=crits.map(c=>{const cur=(notes[idx]||{})[c.id]||0;
+      let s=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+        <span style="font-size:13px;color:#555;flex:1;">${c.label||'?'} <span style="color:#888;font-size:11px;">×${c.poids}</span></span>
+        <div style="display:flex;gap:4px;" id="stars-${idx}-${c.id}">`;
+      for(let i=1;i<=5;i++)s+=`<button type="button" onclick="setStar(${idx},'${c.id}',${i})" style="width:30px;height:30px;border-radius:6px;border:1px solid ${i<=cur?'#854F0B':'#e0e0e0'};background:${i<=cur?'#FAEEDA':'#fff'};font-size:12px;font-weight:600;cursor:pointer;">${i}</button>`;
+      s+=`</div></div>`;return s;}).join('');
+    form.innerHTML=`<div class="card"><div style="font-size:13px;font-weight:600;color:#854F0B;margin-bottom:12px;">${opt}</div>${starsH}</div>`;
+    forms.appendChild(form);
+  });
+}
+
+function setStar(opt,cid,v){
+  if(!notes[opt])notes[opt]={};notes[opt][cid]=v;
+  const wrap=document.getElementById('stars-'+opt+'-'+cid);
+  if(!wrap)return;
+  wrap.querySelectorAll('button').forEach((b,i)=>{const lit=i+1<=v;b.style.borderColor=lit?'#854F0B':'#e0e0e0';b.style.background=lit?'#FAEEDA':'#fff';});
+}
+
+function renderROForms(){
+  optList=parseOpts();
+  const wrap=document.getElementById('ro-forms');wrap.innerHTML='';
+  optList.forEach((opt,idx)=>{
+    if(!roData[idx])roData[idx]={};
+    const d=document.createElement('div');
+    d.innerHTML=`<div class="card"><div style="font-size:13px;font-weight:600;margin-bottom:10px;">${opt}</div>
+      <div class="field"><label style="color:#993C1D;">⚠ Risque principal</label><textarea id="r-${idx}" placeholder="Ex. Dépendance fournisseur.">${roData[idx].r||''}</textarea></div>
+      <div class="field"><label style="color:#085041;">✦ Opportunité principale</label><textarea id="o-${idx}" placeholder="Ex. Montée en compétence interne.">${roData[idx].o||''}</textarea></div>
+    </div>`;
+    wrap.appendChild(d);
+  });
+}
+
+function saveRO(){optList.forEach((_,i)=>{if(!roData[i])roData[i]={};const r=document.getElementById('r-'+i),o=document.getElementById('o-'+i);if(r)roData[i].r=r.value;if(o)roData[i].o=o.value;});}
+
+function calcScores(){
+  const tp=crits.reduce((s,c)=>s+c.poids,0);
+  return optList.map((opt,idx)=>{let sc=0;crits.forEach(c=>sc+=((notes[idx]||{})[c.id]||0)*c.poids);return{opt,sc,pct:tp?Math.round(sc/(5*tp)*100):0};});
+}
+
+function buildResult(){
+  saveRO();
+  const scores=calcScores();const mx=Math.max(...scores.map(s=>s.sc));
+  let html=`<div class="card" style="background:#FAEEDA;border-color:#EF9F27;">
+    <div style="font-size:12px;color:#633806;font-weight:600;margin-bottom:4px;">Décision</div>
+    <div style="font-size:14px;color:#1a1a1a;">${document.getElementById('objet').value||'—'}</div>
+    ${document.getElementById('autres-oeca').value?`<div class="slabel">Autres éléments à prendre en compte</div><div style="font-size:13px;color:#555;line-height:1.5;">${document.getElementById('autres-oeca').value}</div>`:''}
+  </div>
+  <span class="slabel">Scores pondérés</span>`;
+  scores.forEach(s=>{const isW=s.sc===mx&&mx>0;
+    html+=`<div class="card" style="${isW?'background:#FAEEDA;border-color:#EF9F27;':''}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <span style="font-size:13px;font-weight:${isW?'700':'500'};">${s.opt}${isW?' ✓':''}</span>
+        <span style="font-size:13px;font-weight:700;color:#854F0B;">${s.pct}%</span>
+      </div>
+      <div style="height:6px;background:#f0f0f0;border-radius:3px;overflow:hidden;">
+        <div style="height:100%;width:${s.pct}%;background:#854F0B;border-radius:3px;"></div>
+      </div>
+    </div>`;
+  });
+  html+='<span class="slabel">Risques &amp; opportunités</span>';
+  scores.forEach((s,i)=>{const ro=roData[i]||{};
+    html+=`<div class="card"><div style="font-size:13px;font-weight:600;margin-bottom:6px;">${s.opt}</div>
+      ${ro.r?`<div style="font-size:12px;color:#993C1D;margin-bottom:4px;">⚠ ${ro.r}</div>`:''}
+      ${ro.o?`<div style="font-size:12px;color:#085041;">✦ ${ro.o}</div>`:''}
+    </div>`;
+  });
+  document.getElementById('result-out').innerHTML=html;
+}
+
+function snav(c){
+  const n=document.getElementById('snav');n.innerHTML='';
+  ['Objet','Éval.','Risques','Matrice'].forEach((l,i)=>{
+    if(i>0){const d=document.createElement('div');d.className='step-line';n.appendChild(d);}
+    const d=document.createElement('div');d.className='step-dot'+(i+1===c?' active':i+1<c?' done':'');d.textContent=i+1;n.appendChild(d);
+  });
+}
+
+function go(n){
+  if(n===2){aOptTab=0;renderOptForms();}
+  if(n===3)renderROForms();
+  if(n===4)buildResult();
+  ['p1','p2','p3','p4'].forEach((id,i)=>{const el=document.getElementById(id);if(el)el.style.display=(i+1===n)?'block':'none';});
+  snav(n);window.scrollTo(0,0);
+}
+snav(1);
+
+function doPrint(){
+  const c=document.getElementById('result-out').innerHTML;
+  if(!c){alert('Génère ta matrice d\'abord.');return;}
+  const w=window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Matrice OECA</title><style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:system-ui,sans-serif;padding:1.5rem;}.card{border-radius:10px;padding:14px;margin-bottom:10px;border:0.5px solid #e0e0e0;}.slabel{font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:#888;margin-bottom:6px;display:block;margin-top:12px;}</style></head><body>${c}<script>window.onload=()=>window.print();<\/script></body></html>`);
+  w.document.close();
+}
+
+</script>
+</body>
+</html>
